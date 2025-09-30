@@ -3,8 +3,9 @@ import { useFormik } from 'formik';
 import * as yup from "yup";
 import { toast } from 'react-toastify';
 import clsx from "clsx";
-import Catering from './Catering';
 import GetPackege from './GetPackege';
+import Catering from './Catering';
+
 const Form = () => {
     const [totalPrice, setTotalPrice] = useState('');
     const [discount, setDiscount] = useState('');
@@ -220,7 +221,6 @@ const Form = () => {
 
 
                         <Catering />
-
                         <GetPackege />
 
                         <div className="form-group">
