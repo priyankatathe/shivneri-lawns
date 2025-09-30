@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Navbar from './component/Navbar'
 import Home from './pages/Home'
 import { Form } from 'formik'
+import BookingList from './pages/BookingList'
+import Login from './component/Login'
 
 const App = () => {
   return <>
@@ -11,6 +13,8 @@ const App = () => {
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/form' element={<Form />} />
+        <Route path='/Bookinglist' element={<BookingList />} />
+        <Route path='/login' element={<Login />} />
         <Route path='*' element={<h1>Page Not Found</h1>} />
       </Routes>
     </BrowserRouter>
