@@ -1,0 +1,89 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+
+const Navbar = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <nav className=" shadow-md  w-full ">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-center h-16">
+                    {/* Logo + Name */}
+                    <div className="flex items-center space-x-2">
+                        <img
+                            src="https://www.nicepng.com/png/full/376-3764411_events-logo-png-event-management.png"
+                            alt="logo"
+                            className="w-10 h-10 rounded-full"
+                        />
+                        <span className="text-xl font-bold text-gray-700">MyWebsite</span>
+                    </div>
+
+                    {/* Desktop Links */}
+                    <div className="hidden md:flex items-center space-x-6">
+                        <Link to="/" className="text-gray-600 hover:text-blue-600">
+                            मुख्य पृष्ठ
+                        </Link>
+                        <a href="#" className="text-gray-600 hover:text-blue-600">
+                            तक्त्यांची यादी
+                        </a>
+                        <a href="#" className="text-gray-600 hover:text-blue-600">
+                            फॉर्म
+                        </a>
+                        <a href="#" className="text-red-600 hover:text-blue-600">
+                            लॉगआउट
+                        </a>
+
+                    </div>
+
+                    {/* Mobile Menu Button */}
+                    <div className="md:hidden">
+                        <button
+                            onClick={() => setIsOpen(!isOpen)}
+                            className="text-gray-700 focus:outline-none"
+                        >
+                            {isOpen ? "✖" : "☰"}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Links */}
+            {isOpen && (
+                <div className="md:hidden bg-white shadow-lg">
+                    <div className="px-4 pt-2 pb-4 space-y-2">
+                        <a
+                            href="#"
+                            onClick={() => setIsOpen(false)}
+                            className="block text-gray-600 hover:text-blue-600"
+                        >
+                            मुख्य पृष्ठ
+                        </a>
+                        <a
+                            href="#"
+                            onClick={() => setIsOpen(false)}
+                            className="block text-gray-600 hover:text-blue-600"
+                        >
+                            तक्त्यांची यादी
+                        </a>
+                        <a
+                            href="#"
+                            onClick={() => setIsOpen(false)}
+                            className="block text-gray-600 hover:text-blue-600"
+                        >
+                            फॉर्म
+                        </a>
+                        <a
+                            href="#"
+                            onClick={() => setIsOpen(false)}
+                            className="block text-gray-600 hover:text-blue-600"
+                        >
+                            लॉगआउट
+                        </a>
+
+                    </div>
+                </div>
+            )}
+        </nav>
+    );
+};
+
+export default Navbar;
