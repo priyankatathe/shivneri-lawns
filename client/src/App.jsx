@@ -2,7 +2,7 @@ import React from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Navbar from './component/Navbar'
 import Home from './pages/Home'
-import { Form } from 'formik'
+import Form from './formList/Form'
 
 const App = () => {
   return <>

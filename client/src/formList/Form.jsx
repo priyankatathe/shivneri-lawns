@@ -205,10 +205,10 @@ const Form = () => {
                                 className={handleClass("package")}
                                 {...formik.getFieldProps("package")}
                             // className="select select-bordered w-full bg-blue-50"
-                            >
-                                <option>Basic</option>
-                                <option>Standard</option>
-                                <option>Premium</option>
+                            >   <option value="">-- निवडा --</option>
+                                <option value="Basic">Basic</option>
+                                <option value="Standard">Standard</option>
+                                <option value="Premium">Premium</option>
                             </select>
                         </div>
 
@@ -226,7 +226,7 @@ const Form = () => {
                         <div className="form-group">
                             <label className="font-semibold">एकूण किंमत</label>
                             <input
-                                className={handleClass("package")}
+                                className={handleClass("totalRs")}
                                 // {...formik.getFieldProps("package")}
                                 type="number"
                                 placeholder="एकूण किंमत"
@@ -235,17 +235,16 @@ const Form = () => {
                             />
                         </div>
 
-                        {/* सवलत */}
                         <div className="form-group">
                             <label className="font-semibold">सवलत</label>
                             <input
-                                className={handleClass("package")}
-                                // {...formik.getFieldProps("package")}
+                                // className={handleClass("package")}
+                                {...formik.getFieldProps("package")}
                                 type="number"
                                 placeholder="सवलत"
                                 value={discount}
                                 onChange={(e) => setDiscount(e.target.value)}
-                            // className="input input-bordered w-full bg-blue-50"
+                                className="input input-bordered w-full bg-blue-50"
                             />
                         </div>
 
