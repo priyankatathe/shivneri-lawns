@@ -11,45 +11,44 @@ const { checkEmpty } = require("../utils/checkEmpty")
 exports.registerAdmin = asyncHandler(async (req, res) => {
     uploadImage(req, res, async (err) => {
         if (err) {
-            return res.status(400).json({ message: "Unable To Upload Image", error: err })
+            return res.status(400).json({ message: "Unable To Upload Image", error: err });
         }
 
-        const { name, email, password, mobile, title, role } = req.body
+        const { name, email, password, mobile, title, role } = req.body;
 
         // ✅ Validation
         if (!name || !email || !password || !mobile || !title) {
-            return res.status(400).json({ message: "All Fields Required" })
+            return res.status(400).json({ message: "All Fields Required" });
         }
-
         if (!validator.isEmail(email)) {
-            return res.status(400).json({ message: "Invalid Email" })
+            return res.status(400).json({ message: "Invalid Email" });
         }
-
         if (!validator.isStrongPassword(password)) {
-            return res.status(400).json({ message: "Provide Strong Password" })
+            return res.status(400).json({ message: "Provide Strong Password" });
         }
-
         if (mobile && !validator.isMobilePhone(mobile.toString(), "any")) {
-            return res.status(400).json({ message: "Provide correct Phone Number" })
+            return res.status(400).json({ message: "Provide correct Phone Number" });
         }
 
         try {
             // ✅ Password hash
-            const hash = await bcrypt.hash(password, 10)
+            const hash = await bcrypt.hash(password, 10);
 
-            // ✅ Event Image Upload
-            let eventImgUrl = null
+            // ✅ Event Image Upload (Single)
+            let eventurl = null
+            let logourl = null
+
             if (req.files?.EventImage && req.files.EventImage[0]) {
                 const { secure_url } = await cloudinary.uploader.upload(req.files.EventImage[0].path)
-                eventImgUrl = secure_url
+                eventurl = secure_url
             }
-
-            // ✅ Logo Image Upload
-            let logoImgUrl = null
             if (req.files?.LogoImage && req.files.LogoImage[0]) {
                 const { secure_url } = await cloudinary.uploader.upload(req.files.LogoImage[0].path)
-                logoImgUrl = secure_url
+                logourl = secure_url
             }
+
+
+
 
             // ✅ Create Admin in DB
             const result = await Auth.create({
@@ -58,24 +57,24 @@ exports.registerAdmin = asyncHandler(async (req, res) => {
                 mobile,
                 password: hash,
                 title,
-                EventImg: eventImgUrl,
-                LogoImage: logoImgUrl,
+                EventImage: eventurl,
+                LogoImage: logourl,
                 role: role || "admin",
             })
 
             res.status(201).json({
                 message: "Admin registered successfully",
                 result,
-            })
+            });
         } catch (error) {
-            console.log("Register Error:", error)
+            console.log("Register Error:", error);
 
             if (error.code === 11000) {
-                const field = Object.keys(error.keyValue)[0]
-                return res.status(400).json({ message: `${field} already exists` })
+                const field = Object.keys(error.keyValue)[0];
+                return res.status(400).json({ message: `${field} already exists` });
             }
 
-            res.status(500).json({ message: "Something went wrong", error: error.message })
+            res.status(500).json({ message: "Something went wrong", error: error.message });
         }
     })
 })
