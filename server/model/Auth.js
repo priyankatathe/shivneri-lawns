@@ -7,7 +7,7 @@ const authSchema = new mongoose.Schema(
         mobile: { type: Number, required: true, unique: true },
         password: { type: String, required: true },
         title: { type: String, required: true },
-        EventImg: { type: String, default: null },
+        EventImage: { type: String, default: null },
         LogoImage: { type: String, default: null },
         role: { type: String, default: "admin" },
     },

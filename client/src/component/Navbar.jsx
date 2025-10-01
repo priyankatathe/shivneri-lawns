@@ -1,11 +1,21 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { useGetAdminQuery } from "../redux/api/authApi";
+import { Link, useNavigate } from "react-router-dom";
+import { useGetAdminQuery, useLogoutAdminMutation } from "../redux/api/authApi";
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const { data, isLoading, isError } = useGetAdminQuery()
+    const [logout] = useLogoutAdminMutation();
+    const navigate = useNavigate();
 
+    const handleLogout = async () => {
+        try {
+            await logout().unwrap();   // API call
+            navigate("/login");        // redirect to login page
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
 
     return (
         <nav className="shadow-md w-full">
@@ -15,9 +25,9 @@ const Navbar = () => {
                     {/* Logo + Name */}
                     <div className="flex items-center space-x-2">
                         <img
-                            src="https://www.nicepng.com/png/full/376-3764411_events-logo-png-event-management.png"
+                            src={data?.LogoImage}
                             alt="logo"
-                            className="w-10 h-10 rounded-full"
+                            className="w-10 h-10 rounded"
                         />
 
                         {/* API से Admin Name */}
@@ -43,9 +53,12 @@ const Navbar = () => {
                         <Link to="/form" className="text-gray-600 hover:text-blue-600">
                             फॉर्म
                         </Link>
-                        <a href="#" className="text-red-600 hover:text-blue-600">
+                        <button
+                            onClick={handleLogout}
+                            className="text-red-600 hover:text-blue-600"
+                        >
                             लॉगआउट
-                        </a>
+                        </button>
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -85,13 +98,15 @@ const Navbar = () => {
                         >
                             फॉर्म
                         </Link>
-                        <a
-                            href="#"
-                            onClick={() => setIsOpen(false)}
-                            className="block text-gray-600 hover:text-blue-600"
+                        <button
+                            onClick={() => {
+                                handleLogout();
+                                setIsOpen(false);
+                            }}
+                            className="block text-red-600 hover:text-blue-600 w-full text-left"
                         >
                             लॉगआउट
-                        </a>
+                        </button>
                     </div>
                 </div>
             )}

@@ -15,6 +15,8 @@ const authSlice = createSlice({
     extraReducers: builder => builder
         .addMatcher(authApi.endpoints.loginAdmin.matchFulfilled, (state, { payload }) => {
             state.admin = payload
+            localStorage.setItem("admin", JSON.stringify(payload))
+
         })
         .addMatcher(authApi.endpoints.logoutAdmin.matchFulfilled, (state, { payload }) => {
             state.admin = null
