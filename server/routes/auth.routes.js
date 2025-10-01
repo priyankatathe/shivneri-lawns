@@ -9,6 +9,10 @@ router
     .post("/admin-login", authController.loginAdmin)
     .post("/admin-logout", authController.logoutAdmin)
 
+    //reset and forget password
+    .post("/forgot-password", authController.forgotPassword)
+    .post("/reset-password/:token", authController.resetPassword)
+
     .get("/admin-fetch", adminProtected, authController.fetchAdmin)
 
 
