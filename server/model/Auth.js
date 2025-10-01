@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose")
 
 const authSchema = new mongoose.Schema(
@@ -10,8 +11,13 @@ const authSchema = new mongoose.Schema(
         EventImage: { type: String, default: null },
         LogoImage: { type: String, default: null },
         role: { type: String, default: "admin" },
+
+        // 🔹 Forgot/Reset Password fields
+        resetPasswordToken: { type: String },
+        resetPasswordExpire: { type: Date },
     },
     { timestamps: true }
 )
 
 module.exports = mongoose.model("admin", authSchema);
+

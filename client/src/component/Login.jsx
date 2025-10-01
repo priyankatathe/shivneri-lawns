@@ -57,8 +57,8 @@ const Login = () => {
             />
 
             <div className="relative bg-white bg-opacity-90 p-8 rounded-xl shadow-lg w-96">
-                <h2 className="text-2xl font-bold text-center mb-6"> लॉगिन</h2>
-                <form className="flex flex-col gap-4" onSubmit={formik.handleSubmit}>
+                <h2 className="text-2xl font-bold text-center mb-6">लॉगिन</h2>
+                <form className="flex flex-col gap-4">
                     <div>
                         <label className="block mb-1 font-semibold">ईमेल</label>
                         <input
