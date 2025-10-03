@@ -97,7 +97,7 @@ const BookingList = () => {
 
                         <div className="input input-bordered flex items-center gap-2 w-full h-20">
                             <span className="font-extrabold" >बुकिंग शोधा:</span>
-                            {/* <FaSearch className="text-gray-500" /> */}
+                            <FaSearch className="text-gray-500" />
                             <input
                                 type="text"
                                 placeholder="नाव, फोन, इव्हेंट प्रकार, किंवा चौकशी प्रकारानुसार शोधा"

@@ -1,5 +1,5 @@
 import React from "react";
-import backgroundImg from "../assets/photo.jpg"; // तुमचा image path
+import backgroundImg from "../assets/3.jpg"
 
 const Login = () => {
     return (

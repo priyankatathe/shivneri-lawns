@@ -22,12 +22,12 @@ const Navbar = () => {
                         <Link to="/" className="text-gray-600 hover:text-blue-600">
                             मुख्य पृष्ठ
                         </Link>
-                        <a href="#" className="text-gray-600 hover:text-blue-600">
+                        <Link to="/Bookinglist" className="text-gray-600 hover:text-blue-600">
                             तक्त्यांची यादी
-                        </a>
-                        <a href="#" className="text-gray-600 hover:text-blue-600">
+                        </Link>
+                        <Link to="/form" className="text-gray-600 hover:text-blue-600">
                             फॉर्म
-                        </a>
+                        </Link>
                         <a href="#" className="text-red-600 hover:text-blue-600">
                             लॉगआउट
                         </a>
