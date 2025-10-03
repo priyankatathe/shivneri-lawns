@@ -7,8 +7,10 @@ import Catering from "./Catering";
 import GetPackege from "./GetPackege";
 import Calculationlogic from "./Calculationlogic";
 import UserInfo from "./UserInfo";
+import { useCreateBookingMutation } from "../redux/api/formApi";
 
 const Form = () => {
+    const [createBooking] = useCreateBookingMutation()
     const [totalPrice, setTotalPrice] = useState("");
     const [discount, setDiscount] = useState("");
     const [finalPrice, setFinalPrice] = useState(0);
@@ -32,23 +34,45 @@ const Form = () => {
     const formik = useFormik({
         initialValues: {
             name: "",
+            phone1: "",
+            phone2: "",
+            address: "",
             location: "",
             eventType: "",
             startDate: "",
             endDate: "",
             package: "",
-            notes: "",
+            cateringRequired: false,
+            cateringItems: [],
+            gatePackageRequired: false,
+            gatePackageItems: [],
+            totalRs: 0,
+            discount: 0,
+            finalPrice: 0,
+            advancePayment: 0,
+            balance: 0,
             chequeRequired: "",
+            notes: ""
         },
+
         validationSchema,
-        onSubmit: (values, { resetForm }) => {
-            toast.success("फॉर्म यशस्वीपणे सबमिट झाला!");
-            console.log("Submitted values:", values);
-            resetForm();
-            setTotalPrice("");
-            setDiscount("");
-            setAdvancePayment("");
-        },
+        onSubmit: async (values, { resetForm }) => {
+            try {
+                const response = await createBooking(values).unwrap();
+                toast.success("फॉर्म यशस्वीपणे सबमिट झाला!");
+                console.log("Submitted values:", response);
+                resetForm();
+                setTotalPrice("");
+                setDiscount("");
+                setAdvancePayment("");
+                setBalance("");
+            } catch (error) {
+                console.error("Form submit error:", error);
+                toast.error(error?.data?.message || "फॉर्म सबमिट करताना त्रुटी आली!");
+            }
+        }
+
+
     });
 
     const handleClass = (field) =>
@@ -77,10 +101,13 @@ const Form = () => {
                 >
                     {/* UserInfo component */}
                     {/* <div className="lg:col-span-3"> */}
-                    <UserInfo />
+                    {/* <UserInfo /> */}
+                    <UserInfo formik={formik} />
+
+
                     {/* </div> */}
 
-                    {/* एका Row मध्ये 3 input fields: ठिकाण, इव्हेंट प्रकार, पॅकेज */}
+
                     <div className="flex flex-row gap-6 lg:col-span-3">
                         {/* ठिकाण */}
                         <div className="flex flex-col w-1/3">
@@ -167,12 +194,14 @@ const Form = () => {
                         )}
                     </div>
 
+
+
                     {/* Catering, GetPackege */}
                     <div>
-                        <Catering />
+                        <Catering formik={formik} />
                     </div>
                     <div>
-                        <GetPackege />
+                        <GetPackege formik={formik} />
                     </div>
 
                     {/* चेक तपशील */}
@@ -213,7 +242,7 @@ const Form = () => {
 
                     {/* Calculation logic */}
                     {/* <div className="lg:col-span-3"> */}
-                    <Calculationlogic />
+                    <Calculationlogic formik={formik} />
                     {/* </div> */}
 
                     {/* नोट्स */}

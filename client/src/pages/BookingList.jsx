@@ -1,9 +1,11 @@
+
 import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa"; // search icon
 
 const BookingList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [usersPerPage, setUsersPerPage] = useState(5); // dynamic rows per page
+    const [search, setSearch] = useState(""); // 🔍 search state
 
     const data = [
         {
@@ -76,17 +78,27 @@ const BookingList = () => {
             total: 70000,
             balance: 20000,
         },
-    ]
+    ];
 
-    // Pagination logic
+    // 🔍 Filter logic (नाव, फोन, इव्हेंट, status वरून search)
+    const filteredData = data.filter((row) => {
+        const searchLower = search.toLowerCase();
+        return (
+            row.name.toLowerCase().includes(searchLower) ||
+            row.event.toLowerCase().includes(searchLower) ||
+            row.status.toLowerCase().includes(searchLower) ||
+            row.phone.some((num) => num.includes(searchLower))
+        );
+    });
+
+    // Pagination logic (filteredData वापरले आहे)
     const indexOfLastRow = currentPage * usersPerPage;
     const indexOfFirstRow = indexOfLastRow - usersPerPage;
-    const currentRows = data.slice(indexOfFirstRow, indexOfLastRow);
-    const totalPages = Math.ceil(data.length / usersPerPage);
+    const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+    const totalPages = Math.ceil(filteredData.length / usersPerPage);
 
     return <>
         <div className="p-6">
-
             <h2 className="text-center text-2xl font-bold mb-4">बुकिंग लिस्ट</h2>
 
             {/* Search and Filters */}
@@ -94,12 +106,16 @@ const BookingList = () => {
                 {/* Search */}
                 <div className="mb-3">
                     <label className="flex items-center gap-2">
-
                         <div className="input input-bordered flex items-center gap-2 w-full h-20">
                             <span className="font-extrabold" >बुकिंग शोधा:</span>
                             <FaSearch className="text-gray-500" />
                             <input
                                 type="text"
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                    setCurrentPage(1); // शोधल्यावर page reset
+                                }}
                                 placeholder="नाव, फोन, इव्हेंट प्रकार, किंवा चौकशी प्रकारानुसार शोधा"
                                 className="grow focus:outline-none ps-16"
                             />
@@ -175,7 +191,7 @@ const BookingList = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentRows.map((row, index) => (
+                        {currentRows.length > 0 ? currentRows.map((row, index) => (
                             <tr key={index} className="text-center">
                                 <td>{row.name}</td>
                                 <td>{row.event}</td>
@@ -201,31 +217,26 @@ const BookingList = () => {
                                     </button>
                                 </td>
                             </tr>
-                        ))}
+                        )) : (
+                            <tr>
+                                <td colSpan="9" className="text-center p-4">काहीही सापडले नाही ❌</td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
 
             {/* Pagination */}
             <div className="flex justify-between items-center mt-1 p-5">
-                <button
-                    className="btn btn-sm bg-orange-500 text-white"
-                    onClick={() =>
-                        setCurrentPage((prev) => (prev > 1 ? prev - 1 : 1))
-                    }
-                >
+                <button className="btn btn-sm bg-orange-500 text-white"
+                    onClick={() => setCurrentPage((prev) => (prev > 1 ? prev - 1 : 1))} >
                     मागील
                 </button>
                 <p>
                     Page {currentPage} of {totalPages}
                 </p>
-                <button
-                    className="btn btn-sm bg-orange-500 text-white"
-                    onClick={() =>
-                        setCurrentPage((prev) =>
-                            prev < totalPages ? prev + 1 : totalPages
-                        )
-                    }
+                <button className="btn btn-sm bg-orange-500 text-white"
+                    onClick={() => setCurrentPage((prev) => prev < totalPages ? prev + 1 : totalPages)}
                 >
                     पुढील
                 </button>
@@ -236,3 +247,4 @@ const BookingList = () => {
 };
 
 export default BookingList;
+

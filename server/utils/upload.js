@@ -8,7 +8,8 @@ const storage = multer.diskStorage({
     }
 })
 exports.upload = multer({ storage }).single("image")
+
 exports.uploadImage = multer({ storage }).fields([
     { name: "EventImage", maxCount: 1 },
-    { name: "LogoImage", maxCount: 5 },
+    { name: "LogoImage", maxCount: 1 },
 ])
