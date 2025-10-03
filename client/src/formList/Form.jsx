@@ -52,7 +52,10 @@ const Form = () => {
             advancePayment: 0,
             balance: 0,
             chequeRequired: "",
-            notes: ""
+            notes: "",
+            inquiryOnly: false,
+
+
         },
 
         validationSchema,
@@ -74,6 +77,28 @@ const Form = () => {
 
 
     });
+    const handleInquiryClick = async () => {
+        const inquiryData = {
+            name: formik.values.name,
+            phone1: formik.values.phone1,
+            address: formik.values.address,
+            inquiryOnly: true,
+        };
+
+        if (!inquiryData.name || !inquiryData.phone1 || !inquiryData.address) {
+            toast.error("कृपया नाव, फोन नंबर आणि पत्ता भरा!");
+            return;
+        }
+
+        try {
+            const response = await createBooking(inquiryData).unwrap();
+            toast.success("चौकशी यशस्वी झाली!");
+            formik.resetForm();
+        } catch (error) {
+            toast.error(error?.data?.message || "चौकशी करताना त्रुटी आली!");
+        }
+    };
+
 
     const handleClass = (field) =>
         clsx("input input-bordered w-full bg-blue-50 focus:bg-white transition", {
@@ -82,7 +107,7 @@ const Form = () => {
         });
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+        <div className="min-h-screen overflow-hidden bg-gray-100 flex items-center justify-center p-6">
             <div className="relative max-w-6xl w-full mx-auto p-8 bg-white rounded-2xl shadow-lg border border-gray-200">
                 <div className="mb-10 flex items-center justify-center gap-3">
                     <img
@@ -99,13 +124,9 @@ const Form = () => {
                     onSubmit={formik.handleSubmit}
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 text-gray-800"
                 >
-                    {/* UserInfo component */}
-                    {/* <div className="lg:col-span-3"> */}
-                    {/* <UserInfo /> */}
+
                     <UserInfo formik={formik} />
 
-
-                    {/* </div> */}
 
 
                     <div className="flex flex-row gap-6 lg:col-span-3">
@@ -131,12 +152,15 @@ const Form = () => {
                         {/* इव्हेंट प्रकार */}
                         <div className="flex flex-col w-1/3">
                             <label className="font-semibold mb-1">* इव्हेंट प्रकार</label>
-                            <input
-                                type="text"
-                                placeholder="इव्हेंट प्रकार"
+                            <select
                                 className={handleClass("eventType")}
                                 {...formik.getFieldProps("eventType")}
-                            />
+                            >
+                                <option value="">निवडा</option>
+                                <option value="Lawn">lagn</option>
+                                <option value="Banquet">haldi</option>
+                                <option value="Both">mehndi</option>
+                            </select>
                             {formik.touched.eventType && formik.errors.eventType && (
                                 <p className="text-red-600 text-sm mt-1">
                                     {formik.errors.eventType}
@@ -258,7 +282,9 @@ const Form = () => {
 
                     {/* Buttons */}
                     <div className="lg:col-span-3 flex flex-col md:flex-row justify-end gap-4 pt-6">
+                        {/* <button type="button" onClick={handleInquirySubmit}>फक्त चौकशी साठी</button> */}
                         <button
+                            onClick={handleInquiryClick}
                             type="button"
                             className="btn btn-info btn-wide shadow hover:brightness-110 transition"
                         >
