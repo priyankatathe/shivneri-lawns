@@ -6,7 +6,8 @@ const { uploadImage } = require("../utils/upload")
 const cloudinary = require("../utils/cloudinary.config")
 const jwt = require("jsonwebtoken")
 const Auth = require("../model/Auth")
-const { checkEmpty } = require("../utils/checkEmpty")
+const { checkEmpty } = require("../utils/checkEmpty");
+const sendEmail = require("../utils/email");
 
 exports.registerAdmin = asyncHandler(async (req, res) => {
     uploadImage(req, res, async (err) => {
@@ -146,53 +147,66 @@ exports.fetchAdmin = asyncHandler(async (req, res) => {
 //forget password
 exports.forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
-
-    // ✅ Validate email
-    if (!email) return res.status(400).json({ message: "Email  is required" });
+    if (!email) return res.status(400).json({ message: "Email is required" });
 
     const user = await Auth.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not find" });
+    if (!user) return res.status(400).json({ message: "User not found" });
 
-    // ✅ Generate token
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    // 6-digit OTP generate
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
 
-    user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 मिनिटे valid
+    user.resetOTP = hashedOTP;
+    user.resetOTPExpire = Date.now() + 10 * 60 * 1000; // 10 मिनिटे
     await user.save();
 
-    // Dev मध्ये token response मध्ये देतो (production मध्ये email ने पाठव)
-    res.json({ message: "Reset token ready", resetToken });
-})
+    const htmlMessage = `
+        <h2>Password Reset OTP</h2>
+        <p>Your OTP is: <strong>${otp}</strong></p>
+        <p>Valid for 10 minutes.</p>
+    `;
 
-// ====================== RESET PASSWORD ======================
-exports.resetPassword = asyncHandler(async (req, res) => {
-    const { token } = req.params;
-    const { password } = req.body;
-
-    // ✅ Validate password
-    if (!password) return res.status(400).json({ message: "new password is required" });
-
-    if (!validator.isStrongPassword(password)) {
-        return res.status(400).json({ message: "Strong Password द्या" });
-    }
-
-    // ✅ Hash the incoming token
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-
-    const user = await Auth.findOne({
-        resetPasswordToken: hashedToken,
-        resetPasswordExpire: { $gt: Date.now() }
+    const sent = await sendEmail({
+        to: user.email,
+        subject: "Password Reset OTP",
+        message: `Your OTP is: ${otp}. Valid for 10 minutes.`, // plain text
+        html: htmlMessage
     });
 
-    if (!user) return res.status(400).json({ message: "Invalid or expired token" });
+    if (sent) {
+        console.log("OTP sent:", otp);
+        res.json({ message: "OTP sent to your email ✅" });
+    } else {
+        res.status(500).json({ message: "Email could not be sent 🚫" });
+    }
+});
 
-    // ✅ Hash password and save
-    user.password = await bcrypt.hash(password, 10);
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
 
+
+// ====================== RESET PASSWORD ======================
+exports.resetPasswordWithOTP = asyncHandler(async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const user = await Auth.findOne({ email });
+    if (!user) return res.status(400).json({ message: "User not found" });
+
+    if (!user.resetOTP || user.resetOTPExpire < Date.now()) {
+        return res.status(400).json({ message: "OTP expired or invalid" });
+    }
+
+    const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
+    if (hashedOTP !== user.resetOTP) {
+        return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetOTP = undefined;
+    user.resetOTPExpire = undefined;
     await user.save();
 
-    res.json({ message: "Password reset successfully please login" });
-})
+    res.json({ message: "Password reset successful ✅. You can now login." });
+});

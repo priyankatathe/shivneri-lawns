@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa"; // search icon
+import { Link } from "react-router-dom";
 
 const BookingList = () => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -211,9 +212,9 @@ const BookingList = () => {
                                     <button className="btn btn-sm bg-red-500 text-white">
                                         हटवा
                                     </button>
-                                    <button className="btn btn-sm bg-blue-500 text-white">
+                                    <Link to="/Bill" className="btn btn-sm bg-blue-500 text-white">
                                         बिल
-                                    </button>
+                                    </Link>
                                 </td>
                             </tr>
                         )) : (

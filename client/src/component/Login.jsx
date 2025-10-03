@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import backgroundImg from "../assets/3.jpg";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useLoginAdminMutation } from "../redux/api/authApi";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
@@ -9,7 +9,7 @@ import clsx from "clsx";
 
 const Login = () => {
     const navigate = useNavigate();
-    const [adminLogin, { isSuccess, isError, isLoading, error }] =
+    const [adminLogin, { isLoading, isSuccess, isError, error }] =
         useLoginAdminMutation();
 
     const formik = useFormik({
@@ -20,26 +20,28 @@ const Login = () => {
         }),
         onSubmit: async (values, { setErrors }) => {
             const res = await adminLogin(values);
-            // अगर server-side error आए तो Formik errors में set करें
             if (res.error) {
                 const msg = res.error.data?.message || "Login failed!";
                 if (msg.toLowerCase().includes("email")) {
                     setErrors({ email: msg });
                 } else if (msg.toLowerCase().includes("password")) {
                     setErrors({ password: msg });
-                } else {
-                    toast.error(msg);
                 }
             }
         },
     });
 
+    // ✅ toast + navigate useEffect मध्ये
     useEffect(() => {
         if (isSuccess) {
             toast.success("Admin Login Successfully ✅");
             navigate("/");
         }
-    }, [isSuccess, navigate]);
+        if (isError) {
+            const msg = error?.data?.message || "Login failed!";
+            toast.error(msg);
+        }
+    }, [isSuccess, isError, error, navigate]);
 
     const handleClass = (key) =>
         clsx(
@@ -50,15 +52,19 @@ const Login = () => {
 
     return (
         <div className="relative min-h-screen flex items-center justify-center">
+            {/* Background */}
             <img
                 src={backgroundImg}
                 alt="Background"
                 className="absolute inset-0 w-full h-full object-cover filter blur-xs"
             />
 
+            {/* Card */}
             <div className="relative bg-white bg-opacity-90 p-8 rounded-xl shadow-lg w-96">
                 <h2 className="text-2xl font-bold text-center mb-6">लॉगिन</h2>
-                <form className="flex flex-col gap-4">
+
+                <form className="flex flex-col gap-4" onSubmit={formik.handleSubmit}>
+                    {/* Email */}
                     <div>
                         <label className="block mb-1 font-semibold">ईमेल</label>
                         <input
@@ -68,23 +74,29 @@ const Login = () => {
                             placeholder="आपला ईमेल टाका"
                         />
                         {formik.touched.email && formik.errors.email && (
-                            <p className="text-red-500 text-sm mt-1">{formik.errors.email}</p>
+                            <p className="text-red-500 text-sm mt-1">
+                                {formik.errors.email}
+                            </p>
                         )}
                     </div>
 
+                    {/* Password */}
                     <div>
                         <label className="block mb-1 font-semibold">पासवर्ड</label>
                         <input
                             type="password"
-                            placeholder="पासवर्ड"
                             {...formik.getFieldProps("password")}
                             className={handleClass("password")}
+                            placeholder="पासवर्ड"
                         />
                         {formik.touched.password && formik.errors.password && (
-                            <p className="text-red-500 text-sm mt-1">{formik.errors.password}</p>
+                            <p className="text-red-500 text-sm mt-1">
+                                {formik.errors.password}
+                            </p>
                         )}
                     </div>
 
+                    {/* Submit Button */}
                     <button
                         type="submit"
                         disabled={isLoading}
@@ -94,11 +106,12 @@ const Login = () => {
                     </button>
                 </form>
 
+                {/* Forgot Password */}
                 <p className="text-center text-sm text-gray-600 mt-4">
                     पासवर्ड विसरलात?{" "}
-                    <a href="#" className="text-orange-500">
+                    <Link to="/forgot" className="text-orange-500">
                         रिसेट करा
-                    </a>
+                    </Link>
                 </p>
             </div>
         </div>

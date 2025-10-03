@@ -10,6 +10,9 @@ import BookingList from './pages/BookingList'
 import Login from './component/Login'
 import Layout from './component/Layout'
 import AdminProtector from './middleware/AdminProtector'
+import ForgotPassword from './component/ForgotPassword'
+import ResetPassword from './component/ResetPassword'
+import Bill from './pages/Bill'
 
 const App = () => {
   return <>
@@ -21,8 +24,11 @@ const App = () => {
           <Route index element={<Home />} />
           <Route path='form' element={<Form />} />
           <Route path='Bookinglist' element={<BookingList />} />
+          <Route path='Bill' element={<Bill />} />
         </Route>
         <Route path='/login' element={<Login />} />
+        <Route path='/forgot' element={<ForgotPassword />} />
+        <Route path='/reset' element={<ResetPassword />} />
         <Route path='*' element={<h1>Page Not Found</h1>} />
       </Routes>
     </BrowserRouter >
