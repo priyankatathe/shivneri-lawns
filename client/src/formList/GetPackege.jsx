@@ -3,7 +3,7 @@ import * as yup from "yup";
 import React, { useState } from 'react';
 import clsx from 'clsx';
 
-const GetPackege = () => {
+const GetPackege = ({ formik }) => {
     const [getPackege, setGetPackege] = useState([
         { name: 'तुतारी', quantity: 1 },
         { name: 'भालदार', quantity: 2 },
@@ -13,17 +13,6 @@ const GetPackege = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedYes, setSelectedYes] = useState(false);
 
-    const formik = useFormik({
-        initialValues: {
-            gatePackage: "",
-        },
-        validationSchema: yup.object({
-            gatePackage: yup.string().required("कृपया पॅकेज पर्याय निवडा"),
-        }),
-        onSubmit: (values) => {
-            console.log(values);
-        }
-    });
 
     const handleClass = (arg) => clsx(
         "input input-bordered w-full mt-1 bg-blue-50 text-sm", {
@@ -54,7 +43,7 @@ const GetPackege = () => {
     };
 
     return (
-        <>
+        <div className='overflow-hidden'>
             {/* Select Box */}
             <div className="mb-4">
                 <label className="font-semibold text-sm">गेट पॅकेज आवश्यक आहे का? *</label>
@@ -80,91 +69,90 @@ const GetPackege = () => {
                     <div className="text-red-500 text-xs">{formik.errors.gatePackage}</div>
                 )}
 
-                {/* इथेच बटण ठेवलेलं आहे */}
+                {/* Button */}
                 {selectedYes && (
                     <div className="mt-2">
                         <button
                             type="button"
                             onClick={() => setShowModal(true)}
-                            className="flex items-center gap-2 border border-pink-500 text-pink-500 px-3 py-1 rounded text-sm hover:bg-pink-600 hover:text-white transition"
+                            className="border border-yellow-400 text-yellow-400 pr-1 pl-1 rounded hover:bg-yellow-400 hover:text-black text-sm"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.8}
-                                stroke="currentColor"
-                                className="w-4 h-4 text-pink-500">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6m-6 0H7m6 0v6" />
-                            </svg>
-                            गेट पॅकेज आयटम व्यवस्थापित करा
+                            🍴 गेट पॅकेज आयटम व्यवस्थापित करा
                         </button>
                     </div>
                 )}
             </div>
 
             {/* Modal */}
+            {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 flex items-center justify-center z-50">
-                    {/* Modal Box */}
-                    <div className="bg-[#1e1f25] text-white rounded-xl shadow-lg w-[600px] max-h-[70vh] overflow-y-auto p-6 relative">
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/10 px-4">
+                    <div className="relative bg-white rounded-xl border border-blue-100 shadow-2xl max-w-full sm:w-[600px] md:w-[760px] max-h-[85vh] flex flex-col">
 
                         {/* Header */}
-                        <h2 className="text-lg font-bold text-pink-400 mb-4 flex items-center gap-2">
-                            🏰 गेट पॅकेज सजावट
-                        </h2>
+                        <div className="flex items-center justify-between px-4 sm:px-8 py-3 sm:py-4 border-b border-blue-100 rounded-t-xl bg-gradient-to-r from-blue-50 via-white to-blue-50">
+                            <h2 className="text-lg sm:text-xl font-bold text-blue-700 flex items-center gap-2">
+                                🏰 गेट पॅकेज सजावट
+                            </h2>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="text-2xl text-blue-400 hover:text-blue-700 transition-all font-light focus:outline-none"
+                                aria-label="Close"
+                            >×</button>
+                        </div>
 
-                        {/* Items */}
-                        <ul className="space-y-3">
-                            {getPackege.map((item, index) => (
-                                <li key={index} className="flex items-center gap-2 bg-gray-800 px-3 py-2 rounded">
-                                    <span className="bg-pink-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-                                        {index + 1}
-                                    </span>
-                                    <input
-                                        type="text"
-                                        value={item.name}
-                                        onChange={(e) => handleNameChange(index, e.target.value)}
-                                        placeholder="आयटमचे नाव प्रविष्ट करा"
-                                        className="bg-gray-900 border-b border-pink-300 flex-1 text-white px-2 text-sm"
-                                    />
-                                    <span className="text-pink-300 text-sm">संख्या</span>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={item.quantity}
-                                        onChange={(e) => handleQuantityChange(index, e.target.value)}
-                                        className="w-14 bg-black text-center text-white rounded text-sm"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveItem(index)}
-                                        className="bg-pink-500 hover:bg-pink-600 text-white rounded-full px-2 py-1 text-sm"
-                                    >
-                                        ✖
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
+                        {/* Scrollable Items List */}
+                        <div className="px-4 sm:px-8 pt-3 sm:pt-4 overflow-y-auto" style={{ maxHeight: "50vh" }}>
+                            <ul className="space-y-3 pb-2">
+                                {getPackege.map((item, index) => (
+                                    <li key={index} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 pl-2 pb-1">
+                                        <span className="bg-blue-300 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">{index + 1}</span>
+                                        <input
+                                            type="text"
+                                            value={item.name}
+                                            onChange={(e) => handleNameChange(index, e.target.value)}
+                                            placeholder="आयटमचे नाव प्रविष्ट करा"
+                                            className="bg-transparent border-b-2 border-gray-300 text-gray-800 text-sm px-1 py-1 focus:border-gray-600 outline-none flex-1 w-full sm:w-auto"
+                                        />
+                                        <span className="text-gray-700 text-sm font-medium">संख्या</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={item.quantity}
+                                            onChange={(e) => handleQuantityChange(index, e.target.value)}
+                                            className="w-20 sm:w-14 bg-transparent border-b-2 border-gray-300 text-gray-800 text-center focus:border-gray-600 rounded-none outline-none"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveItem(index)}
+                                            className="bg-blue-200 hover:bg-blue-400 text-white rounded-full p-2 text-base transition self-start sm:self-auto"
+                                            aria-label="Remove"
+                                        >✖</button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
 
-                        {/* Divider */}
-                        <div className="border-t border-pink-400 my-4"></div>
-                        <p className="text-center text-sm mb-2">नवीन आयटम</p>
-
-                        {/* Add New Item */}
-                        <button
-                            type="button"
-                            onClick={handleAddNewItem}
-                            className="w-full mt-2 text-white bg-pink-500 border border-pink-500 rounded px-3 py-2 text-sm hover:bg-pink-600 transition"
-                        >
-                            + नवीन गेट आयटम जोडा
-                        </button>
+                        {/* New Item Card */}
+                        <div className="px-4 sm:px-8 mt-3">
+                            <div className="bg-blue-50 border border-blue-200 text-blue-700 rounded-md py-3 px-4 text-center">
+                                <p className="text-base font-semibold">नवीन आयटम</p>
+                                <button
+                                    type="button"
+                                    onClick={handleAddNewItem}
+                                    className="mt-2 px-4 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white w-full sm:w-auto"
+                                >
+                                    + नवीन गेट आयटम जोडा
+                                </button>
+                            </div>
+                        </div>
 
                         {/* Footer */}
-                        <div className="flex justify-end mt-6">
+                        <div className="flex justify-end px-4 sm:px-8 py-4 border-t border-blue-100 bg-white rounded-b-xl ">
                             <button
                                 type="button"
                                 onClick={() => setShowModal(false)}
-                                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded text-sm"
+                                className="bg-green-500 hover:bg-green-600 text-white p-2 pl-2 rounded-sm font-bold text-sm transition"
                             >
                                 पूर्ण झाले
                             </button>
@@ -173,7 +161,8 @@ const GetPackege = () => {
                 </div>
             )}
 
-        </>
+
+        </div>
     );
 };
 

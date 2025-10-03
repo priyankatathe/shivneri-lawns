@@ -1,39 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import clsx from 'clsx';
+import React, { useState, useEffect } from "react";
+import clsx from "clsx";
 
 const Catering = ({ formik }) => {
-    const [cateringItems, setCateringItems] = useState(['पाणी', 'भाजी', 'पोळी']);
-    const [newItem, setNewItem] = useState('');
+    const [cateringItems, setCateringItems] = useState(["पाणी", "भाजी", "पोळी"]);
+    const [newItem, setNewItem] = useState("");
     const [openModal, setOpenModal] = useState(false);
 
-    // कॅटरिंगसाठी एक extra field — array of items
     useEffect(() => {
         formik.setFieldValue("cateringItems", cateringItems);
     }, [cateringItems]);
 
-    const handleClass = (arg) => clsx(
-        "input input-bordered w-full bg-blue-50 mt-1 text-sm", {
-        "border-red-500": formik.touched[arg] && formik.errors[arg],
-        "border-green-500": formik.touched[arg] && !formik.errors[arg],
-    });
+    const handleClass = (arg) =>
+        clsx(
+            "input input-bordered w-full bg-blue-50 mt-1 text-sm",
+            {
+                "border-red-500": formik.touched[arg] && formik.errors[arg],
+                "border-green-500": formik.touched[arg] && !formik.errors[arg],
+            }
+        );
 
     const handleAddItem = () => {
         const trimmedItem = newItem.trim();
         if (trimmedItem && !cateringItems.includes(trimmedItem)) {
             setCateringItems([...cateringItems, trimmedItem]);
-            setNewItem('');
+            setNewItem("");
         }
     };
 
     const handleRemoveItem = (itemToRemove) => {
-        setCateringItems(cateringItems.filter(item => item !== itemToRemove));
+        setCateringItems(cateringItems.filter((item) => item !== itemToRemove));
     };
 
     return (
         <>
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-hidden">
                 <div>
-                    <label className="font-semibold text-sm">कॅटरिंग हवे आहे का?</label>
+                    <label className="font-semibold text-sm">
+                        कॅटरिंग हवे आहे का?
+                    </label>
                     <select
                         name="catering"
                         value={formik.values.catering}
@@ -46,10 +50,11 @@ const Catering = ({ formik }) => {
                         <option value="no">नाही</option>
                     </select>
                     {formik.touched.catering && formik.errors.catering && (
-                        <div className="text-red-500 text-xs">{formik.errors.catering}</div>
+                        <div className="text-red-500 text-xs">
+                            {formik.errors.catering}
+                        </div>
                     )}
                 </div>
-
                 {formik.values.catering === "yes" && (
                     <button
                         type="button"
@@ -62,22 +67,26 @@ const Catering = ({ formik }) => {
             </div>
 
             {openModal && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-                    {/* Modal content */}
+                <div className="fixed inset-0 flex items-center justify-center z-50">
+                    {/* Transparent backdrop */}
                     <div
-                        className="relative bg-gray-900 text-white rounded-lg shadow-xl w-full max-w-md max-h-[80vh] flex flex-col pointer-events-auto"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="modal-title"
-                    >
+                        className="absolute inset-0 bg-black opacity-30"
+                        onClick={() => setOpenModal(false)}
+                    ></div>
+
+                    {/* Modal content */}
+                    {/* <div className="relative w-[130%] bg-white text-gray-900 rounded-xl shadow-xl  max-w-lg max-h-[80vh] flex flex-col"> */}
+                    {/* <div className="relative w-[55%]    max-w-4xl bg-white text-gray-900 rounded-xl shadow-xl max-h-[80vh] flex flex-col"> */}
+                    <div className="relative w-[55%] max-w-4xl max-h-[80vh] bg-white text-gray-900 rounded-xl shadow-xl flex flex-col">
+
                         {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
-                            <h2 id="modal-title" className="text-xl font-semibold text-orange-400 flex items-center gap-2">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                            <h2 className="text-xl font-semibold text-blue-500 flex items-center gap-2">
                                 <span>🍴</span> कॅटरिंग मेनू आयटम
                             </h2>
                             <button
                                 onClick={() => setOpenModal(false)}
-                                className="text-gray-400 hover:text-white transition-colors duration-200"
+                                className="text-gray-400 hover:text-blue-700 transition-colors duration-200"
                                 aria-label="Close modal"
                             >
                                 ✖
@@ -95,20 +104,20 @@ const Catering = ({ formik }) => {
                             {cateringItems.map((item, index) => (
                                 <div
                                     key={index}
-                                    className="flex items-center gap-3 bg-gray-800 rounded-md p-3"
+                                    className="flex items-center gap-3 bg-blue-50 rounded-md pr-2 pl-2 pb-2"
                                 >
-                                    <span className="bg-yellow-500 text-black font-bold w-6 h-6 text-sm flex items-center justify-center rounded-full select-none">
+                                    <span className="bg-blue-500 text-white font-bold w-6 h-6 text-sm flex items-center justify-center rounded-full select-none">
                                         {index + 1}
                                     </span>
                                     <input
                                         type="text"
                                         value={item}
                                         readOnly
-                                        className="flex-grow bg-gray-700 text-white rounded-md px-3 py-2 text-sm select-text"
+                                        className="flex-grow bg-transparent text-gray-900 border-0 border-b-2 border-blue-200 focus:border-blue-800 transition-colors duration-300 text-sm font-medium px-0  py-2 rounded-none outline-none"
                                     />
                                     <button
                                         onClick={() => handleRemoveItem(item)}
-                                        className="bg-red-600 hover:bg-red-700 transition-colors duration-200 rounded-md px-3 py-1 text-sm"
+                                        className="bg-red-100 hover:bg-red-200 text-red-600 font-bold transition-colors duration-200 rounded-md px-3 py-1 text-sm"
                                         aria-label={`Remove ${item}`}
                                     >
                                         ✖
@@ -118,18 +127,26 @@ const Catering = ({ formik }) => {
                         </div>
 
                         {/* Add new item */}
-                        <div className="px-6 py-4 border-t border-gray-700">
+                        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
                             <input
                                 type="text"
                                 placeholder="नवीन आयटम"
                                 value={newItem}
                                 onChange={(e) => setNewItem(e.target.value)}
-                                className="w-full rounded-md border border-gray-600 bg-gray-800 text-white px-4 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                className={clsx(
+                                    "w-full bg-transparent text-gray-900 border-0 border-b-2 px-0 py-2 text-sm placeholder-gray-400 transition-all duration-300 outline-none",
+                                    {
+                                        "border-b-blue-400 focus:border-b-blue-700":
+                                            newItem.trim(),
+                                        "border-b-gray-300 focus:border-b-blue-400":
+                                            !newItem.trim(),
+                                    }
+                                )}
                             />
                             <button
                                 type="button"
                                 onClick={handleAddItem}
-                                className="mt-3 w-full bg-yellow-400 text-black font-semibold rounded-md py-2 hover:bg-yellow-500 transition-colors duration-200"
+                                className="mt-3 w-full bg-blue-500 text-white font-semibold rounded-md py-2 hover:bg-blue-600 transition-colors duration-200"
                                 disabled={!newItem.trim()}
                             >
                                 + नवीन कॅटरिंग आयटम जोडा
@@ -137,10 +154,10 @@ const Catering = ({ formik }) => {
                         </div>
 
                         {/* Done button */}
-                        <div className="px-6 py-3 border-t border-gray-700 flex justify-end">
+                        <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 flex justify-end rounded-b-xl">
                             <button
                                 onClick={() => setOpenModal(false)}
-                                className="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md px-5 py-2 transition-colors duration-200"
+                                className="bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md px-5 py-2 transition-colors duration-200"
                             >
                                 पूर्ण झाले
                             </button>
@@ -148,8 +165,6 @@ const Catering = ({ formik }) => {
                     </div>
                 </div>
             )}
-
-
         </>
     );
 };
