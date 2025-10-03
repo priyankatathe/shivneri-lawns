@@ -15,10 +15,10 @@ export const ContactSlice = createApi({
                 },
                 providesTags: ["form"]
             }),
-            addUser: builder.mutation({
+            createBooking: builder.mutation({
                 query: userData => {
                     return {
-                        url: "/apiEndPoint",
+                        url: "/bookings",
                         method: "POST",
                         body: userData
                     }
@@ -30,4 +30,4 @@ export const ContactSlice = createApi({
     }
 })
 
-export const { useGetUsersQuery, useAddUserMutation } = ContactSlice
+export const { useGetUsersQuery, useCreateBookingMutation } = ContactSlice

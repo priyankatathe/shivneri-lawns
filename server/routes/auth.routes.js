@@ -15,6 +15,4 @@ router
 
     .get("/admin-fetch", adminProtected, authController.fetchAdmin)
 
-
-
 module.exports = router
