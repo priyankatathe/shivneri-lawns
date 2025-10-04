@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 
 export const formApi = createApi({
-    reducerPath: "api",
+    reducerPath: "formApi",
 
     // baseQuery: fetchBaseQuery({ baseUrl: `${import.meta.env.VITE_BACKEND_URL}/form` })
 
@@ -9,10 +9,10 @@ export const formApi = createApi({
     tagTypes: ["form"],
     endpoints: (builder) => {
         return {
-            getBookings: builder.query({
+            getUsers: builder.query({
                 query: () => {
                     return {
-                        url: "/full-booking",
+                        url: "/apiEndPoint",
                         method: "GET"
                     }
                 },
@@ -33,4 +33,4 @@ export const formApi = createApi({
     }
 })
 
-export const { useGetBookingsQuery, useCreateBookingMutation } = formApi
+export const { useGetUsersQuery, useCreateBookingMutation } = formApi
