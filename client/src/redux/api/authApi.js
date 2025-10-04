@@ -57,6 +57,22 @@ export const authApi = createApi({
             }),
 
 
+            forgotPassword: builder.mutation({
+                query: (body) => ({
+                    url: "/forgot-password",
+                    method: "POST",
+                    body
+                }),
+            }),
+
+            // 🔹 Reset password using OTP
+            resetPasswordWithOTP: builder.mutation({
+                query: (body) => ({
+                    url: "/reset-password-otp",
+                    method: "POST",
+                    body
+                }),
+            }),
 
         }
     }
@@ -67,5 +83,7 @@ export const {
     useLoginAdminMutation,
     useLogoutAdminMutation,
     useRegisterAdminMutation,
+    //reset or forgot
+    useForgotPasswordMutation, useResetPasswordWithOTPMutation
 
 } = authApi
