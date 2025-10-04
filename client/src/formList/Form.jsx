@@ -149,6 +149,7 @@ const Form = () => {
                 >
 
                     {/* lg:w-[318%] md:w-[209%] w-full overflow-hidden */}
+                    {/* lg:w-[318%] md:w-[209%] w-full overflow-hidden */}
 
                     <UserInfo formik={formik} />
                     <div className="grid lg:mt-0   md:mt-80 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6  overflow-hidden lg:col-span-3">
