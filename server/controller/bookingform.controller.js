@@ -109,6 +109,6 @@ exports.createBooking = asyncHandler(async (req, res) => {
         console.error("Error in createBooking:", error);
         return res.status(500).json({ message: "Server error" });
     }
-});
+})
 
 

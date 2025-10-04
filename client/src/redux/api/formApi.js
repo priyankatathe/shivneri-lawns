@@ -9,7 +9,7 @@ export const ContactSlice = createApi({
     tagTypes: ["form"],
     endpoints: (builder) => {
         return {
-            getUsers: builder.query({
+            getBooking: builder.query({
                 query: () => {
                     return {
                         url: "/apiEndPoint",
