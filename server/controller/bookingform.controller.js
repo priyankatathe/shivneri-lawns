@@ -112,3 +112,22 @@ exports.createBooking = asyncHandler(async (req, res) => {
 });
 
 
+
+exports.getAllBookingsWithStatus = asyncHandler(async (req, res) => {
+    try {
+        const bookings = await BookingForm.find().sort({ createdAt: -1 });
+
+        // प्रत्येक booking मध्ये status add करा
+        const bookingsWithStatus = bookings.map(b => ({
+            ...b._doc, // mongoose doc object to plain object
+            status: b.inquiryOnly ? "Inquiry" : "Booking"
+        }));
+
+        return res.status(200).json(bookingsWithStatus);
+    } catch (error) {
+        console.error("Error in getAllBookingsWithStatus:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
+});
+
+
