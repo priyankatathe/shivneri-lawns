@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 
-export const ContactSlice = createApi({
-    reducerPath: "api",
+export const formApi = createApi({
+    reducerPath: "formApi",
 
     // baseQuery: fetchBaseQuery({ baseUrl: `${import.meta.env.VITE_BACKEND_URL}/form` })
 
@@ -33,4 +33,4 @@ export const ContactSlice = createApi({
     }
 })
 
-export const { useGetUsersQuery, useCreateBookingMutation } = ContactSlice
+export const { useGetUsersQuery, useCreateBookingMutation } = formApi

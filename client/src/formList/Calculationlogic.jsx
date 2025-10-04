@@ -22,7 +22,7 @@ const Calculationlogic = ({ formik }) => {
         let bal = finalPrice - advance;
         if (bal < 0) bal = 0;
         setBalance(bal);
-        formik.setFieldValue("extraRs", bal, false);
+        formik.setFieldValue("balance", bal, false); // ✅ corrected
     }, [finalPrice, advancePayment]);
 
     const handleClass = (field) =>
@@ -90,7 +90,6 @@ const Calculationlogic = ({ formik }) => {
                     />
                 </div>
 
-                {/* Inputs: advancePayment, balance */}
                 <div className="flex flex-col">
                     <label className="font-semibold mb-1 block">आगाऊ रक्कम</label>
                     <input
@@ -98,17 +97,21 @@ const Calculationlogic = ({ formik }) => {
                         min="0"
                         max={finalPrice || undefined}
                         placeholder="आगाऊ रक्कम"
-                        className={handleClass("advancers")}
+                        className={handleClass("advancePayment")}
                         value={advancePayment}
                         onChange={(e) => {
-                            setAdvancePayment(e.target.value);
-                            formik.setFieldValue("advancers", e.target.value);
+                            const value = parseFloat(e.target.value || "0"); // ✅ convert string → number
+                            setAdvancePayment(value); // ✅ local state update
+                            formik.setFieldValue("advancePayment", value); // ✅ formik field update
                         }}
                     />
-                    {formik.touched.advancers && formik.errors.advancers && (
-                        <p className="text-red-600 text-sm mt-1">{formik.errors.advancers}</p>
+
+                    {formik.touched.advancePayment && formik.errors.advancePayment && (
+                        <p className="text-red-600 text-sm mt-1">{formik.errors.advancePayment}</p>
                     )}
+
                 </div>
+
 
                 <div className="flex flex-col">
                     <label className="font-semibold mb-1 block">शिल्लक रक्कम</label>
