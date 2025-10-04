@@ -1,47 +1,67 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import clsx from "clsx";
 
 const Catering = ({ formik }) => {
-    const [cateringItems, setCateringItems] = useState(["पाणी", "भाजी", "पोळी"]);
     const [newItem, setNewItem] = useState("");
     const [openModal, setOpenModal] = useState(false);
 
-    useEffect(() => {
-        formik.setFieldValue("cateringItems", cateringItems);
-    }, [cateringItems]);
+    const cateringItems = formik.values.cateringItems || [];
 
-    const handleClass = (arg) =>
-        clsx(
-            "input input-bordered w-full bg-blue-50 mt-1 text-sm",
-            {
-                "border-red-500": formik.touched[arg] && formik.errors[arg],
-                "border-green-500": formik.touched[arg] && !formik.errors[arg],
-            }
-        );
+    // Custom handler for catering select change
+    const handleCateringChange = (e) => {
+        const val = e.target.value;
+        formik.handleChange(e); // Update formik value
+
+        if (val !== "yes") {
+            setOpenModal(false); // Close modal if catering is not yes
+            formik.setFieldValue("cateringItems", []); // Clear catering items
+        }
+    };
 
     const handleAddItem = () => {
         const trimmedItem = newItem.trim();
-        if (trimmedItem && !cateringItems.includes(trimmedItem)) {
-            setCateringItems([...cateringItems, trimmedItem]);
+        if (
+            trimmedItem &&
+            !cateringItems.some((item) => item.name.toLowerCase() === trimmedItem.toLowerCase())
+        ) {
+            formik.setFieldValue("cateringItems", [
+                ...cateringItems,
+                { name: trimmedItem, quantity: 1 },
+            ]);
             setNewItem("");
         }
     };
 
     const handleRemoveItem = (itemToRemove) => {
-        setCateringItems(cateringItems.filter((item) => item !== itemToRemove));
+        formik.setFieldValue(
+            "cateringItems",
+            cateringItems.filter((item) => item.name !== itemToRemove.name)
+        );
     };
+
+    const handleQuantityChange = (itemToUpdate, newQty) => {
+        if (newQty < 1) return; // quantity minimum 1
+        const updatedItems = cateringItems.map((item) =>
+            item.name === itemToUpdate.name ? { ...item, quantity: newQty } : item
+        );
+        formik.setFieldValue("cateringItems", updatedItems);
+    };
+
+    const handleClass = (arg) =>
+        clsx("input input-bordered w-full bg-blue-50 mt-1 text-sm", {
+            "border-red-500": formik.touched[arg] && formik.errors[arg],
+            "border-green-500": formik.touched[arg] && !formik.errors[arg],
+        });
 
     return (
         <>
             <div className="space-y-4 overflow-hidden">
                 <div>
-                    <label className="font-semibold text-sm">
-                        कॅटरिंग हवे आहे का?
-                    </label>
+                    <label className="font-semibold text-sm">कॅटरिंग हवे आहे का?</label>
                     <select
                         name="catering"
                         value={formik.values.catering}
-                        onChange={formik.handleChange}
+                        onChange={handleCateringChange}  // custom handler here
                         onBlur={formik.handleBlur}
                         className={handleClass("catering")}
                     >
@@ -50,11 +70,11 @@ const Catering = ({ formik }) => {
                         <option value="no">नाही</option>
                     </select>
                     {formik.touched.catering && formik.errors.catering && (
-                        <div className="text-red-500 text-xs">
-                            {formik.errors.catering}
-                        </div>
+                        <div className="text-red-500 text-xs">{formik.errors.catering}</div>
                     )}
                 </div>
+
+                {/* Show modal button only if catering is yes */}
                 {formik.values.catering === "yes" && (
                     <button
                         type="button"
@@ -75,10 +95,7 @@ const Catering = ({ formik }) => {
                     ></div>
 
                     {/* Modal content */}
-                    {/* <div className="relative w-[130%] bg-white text-gray-900 rounded-xl shadow-xl  max-w-lg max-h-[80vh] flex flex-col"> */}
-                    {/* <div className="relative w-[55%]    max-w-4xl bg-white text-gray-900 rounded-xl shadow-xl max-h-[80vh] flex flex-col"> */}
                     <div className="relative w-[55%] max-w-4xl max-h-[80vh] bg-white text-gray-900 rounded-xl shadow-xl flex flex-col">
-
                         {/* Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                             <h2 className="text-xl font-semibold text-blue-500 flex items-center gap-2">
@@ -111,14 +128,47 @@ const Catering = ({ formik }) => {
                                     </span>
                                     <input
                                         type="text"
-                                        value={item}
+                                        value={item.name}
                                         readOnly
-                                        className="flex-grow bg-transparent text-gray-900 border-0 border-b-2 border-blue-200 focus:border-blue-800 transition-colors duration-300 text-sm font-medium px-0  py-2 rounded-none outline-none"
+                                        className="flex-grow bg-transparent text-gray-900 border-0 border-b-2 border-blue-200 focus:border-blue-800 transition-colors duration-300 text-sm font-medium px-0 py-2 rounded-none outline-none"
                                     />
+
+                                    {/* Quantity controls */}
+                                    <div className="flex items-center space-x-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleQuantityChange(item, item.quantity - 1)}
+                                            className="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded px-2 py-1 select-none"
+                                            aria-label={`Decrease quantity of ${item.name}`}
+                                        >
+                                            -
+                                        </button>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            value={item.quantity}
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value, 10);
+                                                if (!isNaN(val) && val >= 1) {
+                                                    handleQuantityChange(item, val);
+                                                }
+                                            }}
+                                            className="w-12 text-center border border-gray-300 rounded py-1 text-sm"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleQuantityChange(item, item.quantity + 1)}
+                                            className="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded px-2 py-1 select-none"
+                                            aria-label={`Increase quantity of ${item.name}`}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+
                                     <button
                                         onClick={() => handleRemoveItem(item)}
                                         className="bg-red-100 hover:bg-red-200 text-red-600 font-bold transition-colors duration-200 rounded-md px-3 py-1 text-sm"
-                                        aria-label={`Remove ${item}`}
+                                        aria-label={`Remove ${item.name}`}
                                     >
                                         ✖
                                     </button>
@@ -136,10 +186,8 @@ const Catering = ({ formik }) => {
                                 className={clsx(
                                     "w-full bg-transparent text-gray-900 border-0 border-b-2 px-0 py-2 text-sm placeholder-gray-400 transition-all duration-300 outline-none",
                                     {
-                                        "border-b-blue-400 focus:border-b-blue-700":
-                                            newItem.trim(),
-                                        "border-b-gray-300 focus:border-b-blue-400":
-                                            !newItem.trim(),
+                                        "border-b-blue-400 focus:border-b-blue-700": newItem.trim(),
+                                        "border-b-gray-300 focus:border-b-blue-400": !newItem.trim(),
                                     }
                                 )}
                             />
