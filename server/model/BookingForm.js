@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 
 const CateringItemSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    // quantity नाही कारण catering items मध्ये सामान्यतः quantity नसेल
 });
 
 const GatePackageItemSchema = new mongoose.Schema({
@@ -18,7 +17,7 @@ const BookingSchema = new mongoose.Schema({
     address: { type: String, required: true },
 
     // Event Details
-    location: { type: String, required: function () { return !this.inquiryOnly; } },  // फक्त booking साठी आवश्यक
+    location: { type: String, required: function () { return !this.inquiryOnly; } },
     eventType: { type: String, required: function () { return !this.inquiryOnly; } },
     startDate: { type: Date, required: function () { return !this.inquiryOnly; } },
     endDate: { type: Date, required: function () { return !this.inquiryOnly; } },
@@ -26,11 +25,11 @@ const BookingSchema = new mongoose.Schema({
 
     // Catering
     cateringRequired: { type: Boolean, required: function () { return !this.inquiryOnly; } },
-    cateringItems: [CateringItemSchema],  // optional array
+    cateringItems: [CateringItemSchema],
 
     // Gate Package
     gatePackageRequired: { type: Boolean, required: function () { return !this.inquiryOnly; } },
-    gatePackageItems: [GatePackageItemSchema],  // optional array
+    gatePackageItems: [GatePackageItemSchema],
 
     // Calculation / Pricing
     totalRs: { type: Number, required: function () { return !this.inquiryOnly; } },
@@ -40,16 +39,18 @@ const BookingSchema = new mongoose.Schema({
     balance: { type: Number, required: function () { return !this.inquiryOnly; } },
 
     // Cheque requirement
-    chequeRequired: { type: String, enum: ["होय", "नाही"], required: function () { return !this.inquiryOnly; } },
+    chequeRequired: {
+        type: String,
+        enum: ["होय", "नाही"],
+        required: function () { return !this.inquiryOnly; }
+    },
 
     notes: { type: String },
 
-    // New field for inquiry flag
+    // Inquiry Flag
     inquiryOnly: { type: Boolean, default: false },
 
-    createdAt: { type: Date, default: Date.now },
-    adminId: { type: mongoose.Types.ObjectId, ref: "admin" },
-
+    createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('EventBooking', BookingSchema);
