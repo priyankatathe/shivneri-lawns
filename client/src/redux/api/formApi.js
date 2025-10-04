@@ -9,10 +9,10 @@ export const formApi = createApi({
     tagTypes: ["form"],
     endpoints: (builder) => {
         return {
-            getUsers: builder.query({
+            getBookings: builder.query({
                 query: () => {
                     return {
-                        url: "/apiEndPoint",
+                        url: "/full-booking",
                         method: "GET"
                     }
                 },
@@ -33,4 +33,4 @@ export const formApi = createApi({
     }
 })
 
-export const { useGetUsersQuery, useCreateBookingMutation } = formApi
+export const { useGetBookingsQuery, useCreateBookingMutation } = formApi
