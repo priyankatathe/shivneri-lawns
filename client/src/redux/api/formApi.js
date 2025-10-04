@@ -9,7 +9,7 @@ export const formApi = createApi({
     tagTypes: ["form"],
     endpoints: (builder) => {
         return {
-            getUsers: builder.query({
+            getBookings: builder.query({
                 query: () => {
                     return {
                         url: "/full-booking",
