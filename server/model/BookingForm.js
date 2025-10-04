@@ -47,7 +47,9 @@ const BookingSchema = new mongoose.Schema({
     // New field for inquiry flag
     inquiryOnly: { type: Boolean, default: false },
 
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    adminId: { type: mongoose.Types.ObjectId, ref: "admin" },
+
 });
 
 module.exports = mongoose.model('EventBooking', BookingSchema);

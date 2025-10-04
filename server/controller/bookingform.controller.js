@@ -99,7 +99,8 @@ exports.createBooking = asyncHandler(async (req, res) => {
                 balance,
                 chequeRequired,
                 notes,
-                inquiryOnly: false
+                inquiryOnly: false,
+                adminId: req.user
             });
 
             return res.status(201).json({ message: "Booking created successfully", booking });
@@ -112,14 +113,17 @@ exports.createBooking = asyncHandler(async (req, res) => {
 })
 
 
-
 exports.getAllBookingsWithStatus = asyncHandler(async (req, res) => {
     try {
-        const bookings = await BookingForm.find().sort({ createdAt: -1 });
+        // req.user.id should be the logged-in admin's ID
+        const adminId = req.user;
 
-        // प्रत्येक booking मध्ये status add करा
+        // Find bookings created by this admin only
+        const bookings = await BookingForm.find({ adminId }).sort({ createdAt: -1 });
+
+        // Add status field
         const bookingsWithStatus = bookings.map(b => ({
-            ...b._doc, // mongoose doc object to plain object
+            ...b._doc,
             status: b.inquiryOnly ? "Inquiry" : "Booking"
         }));
 
@@ -129,5 +133,6 @@ exports.getAllBookingsWithStatus = asyncHandler(async (req, res) => {
         return res.status(500).json({ message: "Server error" });
     }
 });
+
 
 
