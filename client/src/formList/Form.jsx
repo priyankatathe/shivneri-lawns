@@ -129,7 +129,7 @@ const Form = () => {
     return (
 
 
-        <div className="min-h-screen overflow-hidden bg-gray-100 flex items-center justify-center p-4 sm:p-6 ">
+        <div className="min-h-screen  overflow-hidden bg-gray-100 flex items-center justify-center p-4 sm:p-6 ">
 
             <div className="relative max-w-6xl w-full  mx-auto p-6 sm:p-8 bg-white rounded-2xl shadow-lg border border-gray-200">
                 <div className="mb-10 flex items-center justify-center gap-3 flex-wrap text-center">
@@ -145,7 +145,7 @@ const Form = () => {
 
                 <form
                     onSubmit={formik.handleSubmit}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 text-gray-800"
+                    className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 text-gray-800"
                 >
 
                     <UserInfo formik={formik} />
@@ -153,7 +153,7 @@ const Form = () => {
 
                     <div className="grid lg:mt-0    md:mt-80 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6  overflow-hidden lg:col-span-3">
 
-                        <div className="flex flex-col">
+                        <div className="flex flex-col bg-red-50 p-5 ">
                             <label className="font-semibold mb-1">* ठिकाण निवडा</label>
                             <select className={handleClass("location")} {...formik.getFieldProps("location")}>
                                 <option value="">निवडा</option>

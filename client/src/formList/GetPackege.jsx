@@ -1,6 +1,6 @@
 import { useFormik } from 'formik';
 import * as yup from "yup";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 
 const GetPackege = ({ formik }) => {
@@ -8,7 +8,7 @@ const GetPackege = ({ formik }) => {
     const [selectedYes, setSelectedYes] = useState(false);
 
     // On mount, set selectedYes based on formik value
-    React.useEffect(() => {
+    useEffect(() => {
         setSelectedYes(formik.values.gatePackage === "yes");
     }, [formik.values.gatePackage]);
 
