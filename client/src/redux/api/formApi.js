@@ -1,24 +1,27 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 
-export const ContactSlice = createApi({
+export const formApi = createApi({
     reducerPath: "api",
-    baseQuery: fetchBaseQuery({ baseUrl: `${import.meta.env.VITE_BACKEND_URL}/form`, credentials: "include" }),
+
+    // baseQuery: fetchBaseQuery({ baseUrl: `${import.meta.env.VITE_BACKEND_URL}/form` })
+
+    baseQuery: fetchBaseQuery({ baseUrl: `${import.meta.env.VITE_BACKEND_URL}/booking`, credentials: "include" }),
     tagTypes: ["form"],
     endpoints: (builder) => {
         return {
-            getUsers: builder.query({
+            GetBookings: builder.query({
                 query: () => {
                     return {
-                        url: "/apiEndPoint",
+                        url: "/full-booking",
                         method: "GET"
                     }
                 },
                 providesTags: ["form"]
             }),
-            addUser: builder.mutation({
+            createBooking: builder.mutation({
                 query: userData => {
                     return {
-                        url: "/apiEndPoint",
+                        url: "/bookings",
                         method: "POST",
                         body: userData
                     }
@@ -30,4 +33,4 @@ export const ContactSlice = createApi({
     }
 })
 
-export const { useGetUsersQuery, useAddUserMutation } = ContactSlice
+export const { useGetBookingsQuery, useCreateBookingMutation } = formApi

@@ -1,330 +1,306 @@
-import React, { useEffect, useState } from 'react';
-import { useFormik } from 'formik';
+import React, { useEffect, useState } from "react";
+import { useFormik } from "formik";
 import * as yup from "yup";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import clsx from "clsx";
-import GetPackege from './GetPackege';
-import Catering from './Catering';
+import Catering from "./Catering";
+import GetPackege from "./GetPackege";
+import Calculationlogic from "./Calculationlogic";
+import UserInfo from "./UserInfo";
+import { useCreateBookingMutation } from "../redux/api/formApi";
 
 const Form = () => {
-    const [totalPrice, setTotalPrice] = useState('');
-    const [discount, setDiscount] = useState('');
+    const [createBooking] = useCreateBookingMutation()
+    const [totalPrice, setTotalPrice] = useState("");
+    const [discount, setDiscount] = useState("");
     const [finalPrice, setFinalPrice] = useState(0);
-    const [advancePayment, setAdvancePayment] = useState('');
+    const [advancePayment, setAdvancePayment] = useState("");
     const [balance, setBalance] = useState(0);
-    // const [cateringOption, setCateringOption] = useState('');
-    // const [cateringItems, setCateringItems] = useState(['पुलाव', 'भाजी', 'चपाती']);
-    const [getPackege, setGetPackege] = useState('');
-    const [getPackegeItems, setgetPackegeItems] = useState(['तुतारी,भालदार,चोपदार / द्वाऱ,छत्री']);
 
+    const validationSchema = yup.object({
+        name: yup.string().required("ग्राहकाचे नाव आवश्यक आहे"),
+        location: yup.string().required("ठिकाण निवडा"),
+        eventType: yup.string().required("इव्हेंट प्रकार आवश्यक आहे"),
+        startDate: yup.date().required("प्रारंभ तारीख आवश्यक आहे"),
+        endDate: yup
+            .date()
+            .required("समाप्त तारीख आवश्यक आहे")
+            .min(yup.ref("startDate"), "समाप्त तारीख प्रारंभ तारीखे नंतर असावी"),
+        package: yup.string().required("पॅकेज निवडा"),
+        chequeRequired: yup.string().required("चेक तपशील निवडा"),
+        notes: yup.string().notRequired(),
+    });
 
     const formik = useFormik({
         initialValues: {
             name: "",
-            location: "",
-            eventType: "",
             phone1: "",
             phone2: "",
             address: "",
+            location: "",
+            eventType: "",
             startDate: "",
             endDate: "",
             package: "",
-            totalRs: "",
-            gatePackage: "",
-            notes: "",
+            cateringRequired: false,
+            cateringItems: [],
+            gatePackageRequired: false,
+            gatePackageItems: [],
+            totalRs: 0,
+            discount: 0,
+            finalPrice: 0,
+            advancePayment: 0,
+            balance: 0,
             chequeRequired: "",
+            notes: "",
+            inquiryOnly: false,
+
+
         },
 
-        validationSchema: yup.object({
-            name: yup.string().required("ग्राहकाचे नाव आवश्यक आहे"),
-            location: yup.string().required("ठिकाण निवडा"),
-            phone1: yup.string().required("फोन नंबर आवश्यक आहे").matches(/^\d{10}$/, "10 अंकी नंबर टाका"),
-            address: yup.string().required("पत्ता आवश्यक आहे"),
-            startDate: yup.date().required("प्रारंभ तारीख आवश्यक आहे"),
-            endDate: yup.date().required("समाप्त तारीख आवश्यक आहे"),
-            totalRs: yup.date().required("totalRs"),
-            package: yup.string().required("पॅकेज निवडा"),
-            eventType: yup.string().required("इव्हेंट प्रकार आवश्यक आहे"),
-        }),
-
-        onSubmit: (values, { resetForm }) => {
-            toast.success("फॉर्म सबमिट झाला!");
-            console.log("Submitted values:", values);
-            resetForm();
+        validationSchema,
+        onSubmit: async (values, { resetForm }) => {
+            try {
+                const response = await createBooking(values).unwrap();
+                toast.success("फॉर्म यशस्वीपणे सबमिट झाला!");
+                console.log("Submitted values:", response);
+                resetForm();
+                setTotalPrice("");
+                setDiscount("");
+                setAdvancePayment("");
+                setBalance("");
+            } catch (error) {
+                console.error("Form submit error:", error);
+                toast.error(error?.data?.message || "फॉर्म सबमिट करताना त्रुटी आली!");
+            }
         }
+
+
     });
+    const handleInquiryClick = async () => {
+        const inquiryData = {
+            name: formik.values.name,
+            phone1: formik.values.phone1,
+            address: formik.values.address,
+            inquiryOnly: true,
+        };
 
-    const handleClass = (arg) => clsx(
-        "input input-bordered w-full bg-blue-50", {
-        "border-red-500": formik.touched[arg] && formik.errors[arg],
-        "border-green-500": formik.touched[arg] && !formik.errors[arg],
-    })
-    useEffect(() => {
-        const total = parseFloat(totalPrice) || 0;
-        const disc = parseFloat(discount) || 0;
-        const final = total - disc;
-        setFinalPrice(final >= 0 ? final : 0);
-    }, [totalPrice, discount]);
+        if (!inquiryData.name || !inquiryData.phone1 || !inquiryData.address) {
+            toast.error("कृपया नाव, फोन नंबर आणि पत्ता भरा!");
+            return;
+        }
 
-    // Update balance whenever finalPrice or advancePayment changes
-    useEffect(() => {
-        const advance = parseFloat(advancePayment) || 0;
-        const bal = finalPrice - advance;
-        setBalance(bal >= 0 ? bal : 0);
-    }, [finalPrice, advancePayment]);
+        try {
+            const response = await createBooking(inquiryData).unwrap();
+            toast.success("चौकशी यशस्वी झाली!");
+            formik.resetForm();
+        } catch (error) {
+            toast.error(error?.data?.message || "चौकशी करताना त्रुटी आली!");
+        }
+    };
 
 
+    const handleClass = (field) =>
+        clsx("input input-bordered w-full bg-blue-50 focus:bg-white transition", {
+            "border-red-500": formik.touched[field] && formik.errors[field],
+            "border-green-500": formik.touched[field] && !formik.errors[field],
+        });
+
+    return (
+        <div className="min-h-screen overflow-hidden bg-gray-100 flex items-center justify-center p-6">
+            <div className="relative max-w-6xl w-full mx-auto p-8 bg-white rounded-2xl shadow-lg border border-gray-200">
+                <div className="mb-10 flex items-center justify-center gap-3">
+                    <img
+                        src="https://cdn-icons-png.freepik.com/512/2037/2037690.png"
+                        alt="Event icon"
+                        className="w-10 h-10 rounded-lg"
+                    />
+                    <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">
+                        इव्हेंट मॅनेजमेंट फॉर्म
+                    </h2>
+                </div>
+
+                <form
+                    onSubmit={formik.handleSubmit}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 text-gray-800"
+                >
+
+                    <UserInfo formik={formik} />
 
 
 
-    return <>
-
-        <pre>{JSON.stringify(formik.touched, null, 2)}</pre>
-        <pre>{JSON.stringify(formik.errors, null, 2)}</pre>
-
-        <div className="min-h-screen bg-gray-50  flex items-center justify-center p-4">
-            <div className="relative max-w-6xl w-full mx-auto p-6 sm:p-8 bg-white/90 rounded-2xl shadow-2xl border border-blue-200">
-
-                <div className="relative z-10">
-                    <div className="mb-14 flex items-center ml-96  gap-3">
-                        <img src="https://cdn-icons-png.freepik.com/512/2037/2037690.png" alt="Event icon" className="w-10 h-10 rounded-lg mt-3" />
-                        <h2 className="text-2xl font-extrabold text-black tracking-tight">इव्हेंट मॅनेजमेंट फॉर्म !!</h2>
-
-                    </div>
-                    <form onSubmit={formik.handleSubmit}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-black">
-                        <div >
-                            <label className="font-semibold">* ठिकाण निवडा</label>
-                            <select className={handleClass("location")}
+                    <div className="flex flex-row gap-6 lg:col-span-3">
+                        {/* ठिकाण */}
+                        <div className="flex flex-col w-1/3">
+                            <label className="font-semibold mb-1">* ठिकाण निवडा</label>
+                            <select
+                                className={handleClass("location")}
                                 {...formik.getFieldProps("location")}
                             >
                                 <option value="">निवडा</option>
-                                <option>Lawn</option>
-                                <option>Banquet</option>
-                                <option>Both</option>
+                                <option value="Lawn">Lawn</option>
+                                <option value="Banquet">Banquet</option>
+                                <option value="Both">Both</option>
                             </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm  font-medium text-gray-700">इव्हेंट प्रकार</label>
-                            <input
-                                className={handleClass("eventType")}
-                                {...formik.getFieldProps("eventType")}
-                                type="text"
-                                // className="input input-bordered w-full"
-                                placeholder="eventType "
-                                required
-                            />
-                        </div>
-                        {/* 2 */}
-                        {/* <div className="form-group">
-                            <label className="font-semibold">इव्हेंट प्रकार</label>
-                            <input type="text" placeholder="उदा. लग्न, वाढदिवस"
-                                className={handleClass("eventType")}
-                                {...formik.getFieldProps("eventType")}
-
-                            />
-                        </div> */}
-
-                        {/* 3 */}
-                        <div className="form-group">
-                            <label className="font-semibold">ग्राहकाचे नाव</label>
-                            <input
-                                className={handleClass("name")}
-                                {...formik.getFieldProps("name")}
-                                type="text"
-                                name="name"
-                                value={formik.values.name}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                // className={`input input-bordered w-full bg-blue-50 ${formik.touched.name && formik.errors.name ? 'border-red-500' : ''}`}
-                                placeholder="ग्राहकाचे नाव"
-                            />
-                            {formik.touched.name && formik.errors.name && (
-                                <p className="text-red-500 text-sm">{formik.errors.name}</p>
+                            {formik.touched.location && formik.errors.location && (
+                                <p className="text-red-600 text-sm mt-1">
+                                    {formik.errors.location}
+                                </p>
                             )}
                         </div>
 
-                        <div>
-                            <label className="font-semibold">* ग्राहकाचा फोन नंबर 1</label>
-                            <input
-                                className={handleClass("phone1")}
-                                {...formik.getFieldProps("phone1")}
-                                type="tel" placeholder="ग्राहकाचा फोन नंबर 1"
-                            // className="input input-bordered w-full bg-blue-50" 
-                            />
+                        {/* इव्हेंट प्रकार */}
+                        <div className="flex flex-col w-1/3">
+                            <label className="font-semibold mb-1">* इव्हेंट प्रकार</label>
+                            <select
+                                className={handleClass("eventType")}
+                                {...formik.getFieldProps("eventType")}
+                            >
+                                <option value="">निवडा</option>
+                                <option value="Lawn">lagn</option>
+                                <option value="Banquet">haldi</option>
+                                <option value="Both">mehndi</option>
+                            </select>
+                            {formik.touched.eventType && formik.errors.eventType && (
+                                <p className="text-red-600 text-sm mt-1">
+                                    {formik.errors.eventType}
+                                </p>
+                            )}
                         </div>
 
-                        {/* 5 */}
-                        <div className="form-group">
-                            <label className="font-semibold">ग्राहकाचा फोन नंबर 2</label>
-                            <input
-                                className={handleClass("phone2")}
-                                {...formik.getFieldProps("phone2")}
-                                type="tel" placeholder="ग्राहकाचा फोन नंबर 2"
-                            // className="input input-bordered w-full bg-blue-50" 
-                            />
-                        </div>
-
-                        {/* 6 */}
-                        <div className="form-group">
-                            <label className="font-semibold">* ग्राहकाचा पत्ता</label>
-                            <textarea
-                                {...formik.getFieldProps("address")}
-                                rows="2" placeholder="ग्राहकाचा पत्ता" className="textarea textarea-bordered w-full bg-blue-50" />
-                        </div>
-
-                        {/* 7 */}
-                        <div className="form-group">
-                            <label className="font-semibold">* प्रारंभ तारीख</label>
-                            <input
-                                className={handleClass("startDate")}
-                                {...formik.getFieldProps("startDate")}
-                                type="date" placeholder="प्रारंभ तारीख"
-                            // className="input input-bordered w-full bg-blue-50" 
-
-                            />
-                            {/* <input type="date" className="input input-bordered w-full bg-blue-50" /> */}
-                        </div>
-
-                        {/* 8 */}
-                        <div className="form-group">
-                            <label className="font-semibold">* समाप्त तारीख</label>
-                            <input
-                                className={handleClass("endDate")}
-                                {...formik.getFieldProps("endDate")}
-
-                                type="date" placeholder="समाप्त तारीख"
-                            // className="input input-bordered w-full bg-blue-50" 
-                            />
-                        </div>
-
-                        {/* 9 */}
-                        <div className="form-group">
-                            <label className="font-semibold">* पॅकेज निवडा</label>
+                        {/* पॅकेज निवडा */}
+                        <div className="flex flex-col w-1/3">
+                            <label className="font-semibold mb-1">* पॅकेज निवडा</label>
                             <select
                                 className={handleClass("package")}
                                 {...formik.getFieldProps("package")}
-                            // className="select select-bordered w-full bg-blue-50"
                             >
-                                <option>Basic</option>
-                                <option>Standard</option>
-                                <option>Premium</option>
+                                <option value="">-- निवडा --</option>
+                                <option value="Basic">Basic</option>
+                                <option value="Standard">Standard</option>
+                                <option value="Premium">Premium</option>
                             </select>
+                            {formik.touched.package && formik.errors.package && (
+                                <p className="text-red-600 text-sm mt-1">
+                                    {formik.errors.package}
+                                </p>
+                            )}
                         </div>
+                    </div>
 
-                        {/* 10 */}
-                        {/* <div className="form-group">
-                            <label className="font-semibold">कॅटरिंग पर्याय</label>
-                            <input type="text" className="input input-bordered w-full bg-blue-50" />
-                        </div> */}
+                    {/* प्रारंभ तारीख */}
+                    <div>
+                        <label className="font-semibold mb-1 block">* प्रारंभ तारीख</label>
+                        <input
+                            type="date"
+                            className={handleClass("startDate")}
+                            {...formik.getFieldProps("startDate")}
+                        />
+                        {formik.touched.startDate && formik.errors.startDate && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {formik.errors.startDate}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* समाप्त तारीख */}
+                    <div>
+                        <label className="font-semibold mb-1 block">* समाप्त तारीख</label>
+                        <input
+                            type="date"
+                            className={handleClass("endDate")}
+                            {...formik.getFieldProps("endDate")}
+                        />
+                        {formik.touched.endDate && formik.errors.endDate && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {formik.errors.endDate}
+                            </p>
+                        )}
+                    </div>
 
 
 
-                        <Catering />
-                        <GetPackege />
+                    {/* Catering, GetPackege */}
+                    <div>
+                        <Catering formik={formik} />
+                    </div>
+                    <div>
+                        <GetPackege formik={formik} />
+                    </div>
 
-                        <div className="form-group">
-                            <label className="font-semibold">एकूण किंमत</label>
-                            <input
-                                className={handleClass("package")}
-                                // {...formik.getFieldProps("package")}
-                                type="number"
-                                placeholder="एकूण किंमत"
-                                value={totalPrice}
-                                onChange={(e) => setTotalPrice(e.target.value)}
-                            />
+                    {/* चेक तपशील */}
+                    <div className="lg:col-span-3">
+                        <label className="font-semibold block mb-2">
+                            चेक तपशील आवश्यक आहे का?
+                        </label>
+                        <div className="flex gap-8">
+                            <label className="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    name="chequeRequired"
+                                    value="होय"
+                                    onChange={formik.handleChange}
+                                    checked={formik.values.chequeRequired === "होय"}
+                                    className="radio radio-primary"
+                                />
+                                होय
+                            </label>
+                            <label className="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    name="chequeRequired"
+                                    value="नाही"
+                                    onChange={formik.handleChange}
+                                    checked={formik.values.chequeRequired === "नाही"}
+                                    className="radio radio-primary"
+                                />
+                                नाही
+                            </label>
                         </div>
+                        {formik.touched.chequeRequired && formik.errors.chequeRequired && (
+                            <p className="text-red-600 text-sm mt-1">
+                                {formik.errors.chequeRequired}
+                            </p>
+                        )}
+                    </div>
 
-                        {/* सवलत */}
-                        <div className="form-group">
-                            <label className="font-semibold">सवलत</label>
-                            <input
-                                className={handleClass("package")}
-                                // {...formik.getFieldProps("package")}
-                                type="number"
-                                placeholder="सवलत"
-                                value={discount}
-                                onChange={(e) => setDiscount(e.target.value)}
-                            // className="input input-bordered w-full bg-blue-50"
-                            />
-                        </div>
+                    {/* Calculation logic */}
+                    {/* <div className="lg:col-span-3"> */}
+                    <Calculationlogic formik={formik} />
+                    {/* </div> */}
 
-                        {/* अंतिम किंमत (calculated, readonly) */}
-                        <div className="form-group">
-                            <label className="font-semibold">अंतिम किंमत</label>
-                            <input
-                                className={handleClass("package")}
-                                // {...formik.getFieldProps("package")}
-                                type="number"
-                                placeholder="अंतिम किंमत"
-                                value={finalPrice}
-                                readOnly
-                            // className="input input-bordered w-full bg-blue-100 cursor-not-allowed"
-                            />
-                        </div>
+                    {/* नोट्स */}
+                    <div className="lg:col-span-3">
+                        <label className="font-semibold mb-1 block">नोट्स</label>
+                        <textarea
+                            rows={3}
+                            placeholder="तुमचे नोट्स येथे लिहा"
+                            className={handleClass("notes")}
+                            {...formik.getFieldProps("notes")}
+                        />
+                    </div>
 
-                        {/* आगाऊ रक्कम */}
-                        <div className="form-group">
-                            <label className="font-semibold">आगाऊ रक्कम</label>
-                            <input
-                                className={handleClass("package")}
-                                // {...formik.getFieldProps("package")}
-                                type="number"
-                                placeholder="आगाऊ रक्कम"
-                                value={advancePayment}
-                                onChange={(e) => setAdvancePayment(e.target.value)}
-                            // className="input input-bordered w-full bg-blue-50"
-                            />
-                        </div>
-
-                        {/* 16 */}
-                        <div className="form-group">
-                            <label className="font-semibold">शिल्लक रक्कम</label>
-                            <input
-                                className={handleClass("package")}
-                                {...formik.getFieldProps("package")}
-                                type="number"
-                                placeholder="शिल्लक रक्कम"
-                                value={balance}
-                                readOnly
-                            // className="input input-bordered w-full bg-blue-100 cursor-not-allowed"
-                            />
-                        </div>
-                        {/* Radio */}
-                        <div className="md:col-span-2 lg:col-span-3">
-                            <label className="font-semibold">चेक तपशील आवश्यक आहे का?</label>
-                            <div className="flex gap-4 mt-1">
-                                <label className="flex items-center gap-2">
-                                    <input type="radio" name="cheque" className="radio radio-primary" />
-                                    <span>होय</span>
-                                </label>
-                                <label className="flex items-center gap-2">
-                                    <input type="radio" name="cheque" className="radio radio-primary" />
-                                    <span>नाही</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        {/* Notes */}
-                        <div className="md:col-span-2 lg:col-span-3">
-                            <label className="font-semibold">नोट्स</label>
-                            <textarea className="textarea textarea-bordered w-full bg-blue-50" rows="3" />
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="md:col-span-2 lg:col-span-3 flex flex-col md:flex-row justify-end gap-4 pt-4">
-                            <button type="button" className="btn btn-info btn-wide shadow-md hover:brightness-110 transition">
-                                फक्त चौकशी साठी
-                            </button>
-                            <button type="submit" className="btn btn-primary btn-wide shadow-md hover:scale-105 transition">
-                                सबमिट करा
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    {/* Buttons */}
+                    <div className="lg:col-span-3 flex flex-col md:flex-row justify-end gap-4 pt-6">
+                        {/* <button type="button" onClick={handleInquirySubmit}>फक्त चौकशी साठी</button> */}
+                        <button
+                            onClick={handleInquiryClick}
+                            type="button"
+                            className="btn btn-info btn-wide shadow hover:brightness-110 transition"
+                        >
+                            फक्त चौकशी साठी
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn btn-primary btn-wide shadow hover:scale-105 transition"
+                        >
+                            सबमिट करा
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-    </>
+    );
 };
 
 export default Form;
