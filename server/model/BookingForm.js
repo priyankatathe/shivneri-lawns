@@ -51,6 +51,14 @@ const BookingSchema = new mongoose.Schema({
     inquiryOnly: { type: Boolean, default: false },
     adminId: { type: mongoose.Types.ObjectId, ref: "admin" },
 
+    //mayuri ne add kel ahe hee
+    status: {
+        type: String,
+        enum: ["Booking", "Inquiry", "Cancelled"],
+        default: "Booking"
+    },
+
+
 });
 
 module.exports = mongoose.model('EventBooking', BookingSchema);
