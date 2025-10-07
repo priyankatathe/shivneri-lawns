@@ -1,132 +1,99 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import clsx from "clsx";
 
 const Calculationlogic = ({ formik }) => {
-    const [totalPrice, setTotalPrice] = useState("");
-    const [discount, setDiscount] = useState("");
-    const [finalPrice, setFinalPrice] = useState(0);
-    const [advancePayment, setAdvancePayment] = useState("");
-    const [balance, setBalance] = useState(0);
-
-    useEffect(() => {
-        const total = parseFloat(totalPrice) || 0;
-        const disc = parseFloat(discount) || 0;
-        let final = total - disc;
-        if (final < 0) final = 0;
-        setFinalPrice(final);
-        formik.setFieldValue("finalPrice", final, false);
-    }, [totalPrice, discount]);
-
-    useEffect(() => {
-        const advance = parseFloat(advancePayment) || 0;
-        let bal = finalPrice - advance;
-        if (bal < 0) bal = 0;
-        setBalance(bal);
-        formik.setFieldValue("balance", bal, false); // ✅ corrected
-    }, [finalPrice, advancePayment]);
-
     const handleClass = (field) =>
         clsx("input input-bordered w-full bg-blue-50 focus:bg-white transition", {
             "border-red-500": formik.touched[field] && formik.errors[field],
             "border-green-500": formik.touched[field] && !formik.errors[field],
         });
 
+    // finalPrice गणना
+    useEffect(() => {
+        const total = parseFloat(formik.values.totalRs) || 0;
+        const disc = parseFloat(formik.values.discount) || 0;
+        let final = total - disc;
+        if (final < 0) final = 0;
+        formik.setFieldValue("finalPrice", final, false);
+    }, [formik.values.totalRs, formik.values.discount]);
+
+
+    useEffect(() => {
+        const final = parseFloat(formik.values.finalPrice) || 0;
+        const advance = parseFloat(formik.values.advancePayment) || 0;
+        let bal = final - advance;
+        if (bal < 0) bal = 0;
+        formik.setFieldValue("balance", bal, false);
+    }, [formik.values.finalPrice, formik.values.advancePayment]);
+
     return (
-        <div className="overflow-hidden lg:w-[310%]">
-            <h2 className="text-3xl font-serif mb-6 text-gray-800 ml-0 lg:ml-96">
-                गणना फॉर्म माहिती
-            </h2>
+        <div className="flex w-full">
+            <div className="w-full">
+                <h2 className="text-xl font-serif mb-6 text-gray-800 text-center lg:text-left lg:ml-[45%]">
+                    गणना फॉर्म माहिती
+                </h2>
 
-            <form
-                onSubmit={formik.handleSubmit}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 text-gray-800"
-            >
-                {/* Inputs: totalPrice, discount, finalPrice */}
-                <div className="flex flex-col">
-                    <label className="font-semibold mb-1 block">एकूण किंमत</label>
-                    <input
-                        type="number"
-                        min="0"
-                        placeholder="एकूण किंमत"
-                        className={handleClass("totalRs")}
-                        value={totalPrice}
-                        onChange={(e) => {
-                            setTotalPrice(e.target.value);
-                            formik.setFieldValue("totalRs", e.target.value);
-                        }}
-                    />
-                    {formik.touched.totalRs && formik.errors.totalRs && (
-                        <p className="text-red-600 text-sm mt-1">{formik.errors.totalRs}</p>
-                    )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 text-gray-800">
+                    <div className="flex flex-col">
+                        <label className="font-semibold mb-1 block">एकूण किंमत</label>
+                        <input
+                            type="number"
+                            min="0"
+                            placeholder="एकूण किंमत"
+                            className={handleClass("totalRs")}
+                            {...formik.getFieldProps("totalRs")}
+                        />
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="font-semibold mb-1 block">सवलत</label>
+                        <input
+                            type="number"
+                            min="0"
+                            max={formik.values.totalRs || undefined}
+                            placeholder="सवलत"
+                            className={handleClass("discount")}
+                            {...formik.getFieldProps("discount")}
+                        />
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="font-semibold mb-1 block">अंतिम किंमत</label>
+                        <input
+                            type="number"
+                            placeholder="अंतिम किंमत"
+                            className="input input-bordered w-full bg-blue-100 cursor-not-allowed"
+                            value={formik.values.finalPrice}
+                            readOnly
+                        />
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="font-semibold mb-1 block">अडव्हान्स रक्कम</label>
+                        <input
+                            type="number"
+                            min="0"
+                            max={formik.values.finalPrice || undefined}
+                            placeholder="आगाऊ रक्कम"
+                            className={handleClass("advancePayment")}
+                            {...formik.getFieldProps("advancePayment")}
+                        />
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="font-semibold mb-1 block">शिल्लक रक्कम</label>
+                        <input
+                            type="number"
+                            placeholder="शिल्लक रक्कम"
+                            className="input input-bordered w-full bg-blue-100 cursor-not-allowed"
+                            value={formik.values.balance}
+                            readOnly
+                        />
+                    </div>
                 </div>
-
-                <div className="flex flex-col">
-                    <label className="font-semibold mb-1 block">सवलत</label>
-                    <input
-                        type="number"
-                        min="0"
-                        max={totalPrice || undefined}
-                        placeholder="सवलत"
-                        className={handleClass("discount")}
-                        value={discount}
-                        onChange={(e) => {
-                            setDiscount(e.target.value);
-                            formik.setFieldValue("discount", e.target.value);
-                        }}
-                    />
-                    {formik.touched.discount && formik.errors.discount && (
-                        <p className="text-red-600 text-sm mt-1">{formik.errors.discount}</p>
-                    )}
-                </div>
-
-                <div className="flex flex-col">
-                    <label className="font-semibold mb-1 block">अंतिम किंमत</label>
-                    <input
-                        type="number"
-                        placeholder="अंतिम किंमत"
-                        className="input input-bordered w-full bg-blue-100 cursor-not-allowed"
-                        value={finalPrice}
-                        readOnly
-                    />
-                </div>
-
-                <div className="flex flex-col">
-                    <label className="font-semibold mb-1 block">आगाऊ रक्कम</label>
-                    <input
-                        type="number"
-                        min="0"
-                        max={finalPrice || undefined}
-                        placeholder="आगाऊ रक्कम"
-                        className={handleClass("advancePayment")}
-                        value={advancePayment}
-                        onChange={(e) => {
-                            const value = parseFloat(e.target.value || "0"); // ✅ convert string → number
-                            setAdvancePayment(value); // ✅ local state update
-                            formik.setFieldValue("advancePayment", value); // ✅ formik field update
-                        }}
-                    />
-
-                    {formik.touched.advancePayment && formik.errors.advancePayment && (
-                        <p className="text-red-600 text-sm mt-1">{formik.errors.advancePayment}</p>
-                    )}
-
-                </div>
-
-
-                <div className="flex flex-col">
-                    <label className="font-semibold mb-1 block">शिल्लक रक्कम</label>
-                    <input
-                        type="number"
-                        placeholder="शिल्लक रक्कम"
-                        className="input input-bordered w-full bg-blue-100 cursor-not-allowed"
-                        value={balance}
-                        readOnly
-                    />
-                </div>
-            </form>
+            </div>
         </div>
     );
 };
 
 export default Calculationlogic;
-

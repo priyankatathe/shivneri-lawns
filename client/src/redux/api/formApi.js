@@ -28,9 +28,28 @@ export const formApi = createApi({
                 },
                 invalidatesTags: ["form"]
             }),
+            updateBooking: builder.mutation({
+                query: userData => {
+                    return {
+                        url: `/updateBooking/${userData._id}`,
+                        method: "PUT",
+                        body: userData
+                    }
+                },
+                invalidatesTags: ["form"]
+            }),
+            deleteBooking: builder.mutation({
+                query: (id) => {
+                    return {
+                        url: `/deleteBooking/${id}`,
+                        method: "DELETE"
+                    }
+                },
+                invalidatesTags: ["form"]
+            }),
 
         }
     }
 })
 
-export const { useGetBookingsQuery, useCreateBookingMutation } = formApi
+export const { useGetBookingsQuery, useCreateBookingMutation, useUpdateBookingMutation, useDeleteBookingMutation } = formApi

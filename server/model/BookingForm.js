@@ -41,10 +41,19 @@ const BookingSchema = new mongoose.Schema({
     // Cheque requirement
     chequeRequired: {
         type: String,
-        enum: ["होय", "नाही"],
+        enum: ['होय', 'नाही'],
         required: function () { return !this.inquiryOnly; }
     },
-
+    bankName: {
+        type: String,
+        required: function () { return this.chequeRequired === 'होय'; },
+        trim: true
+    },
+    chequeNumber: {
+        type: String,
+        required: function () { return this.chequeRequired === 'होय'; },
+        trim: true
+    },
     notes: { type: String },
 
     // Inquiry Flag

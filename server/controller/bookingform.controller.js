@@ -1,11 +1,12 @@
 const asyncHandler = require("express-async-handler");
 const BookingForm = require("../model/BookingForm");
-// const Booking = require("../models/EventBooking");  // तुझं booking मॉडेल
+
 
 
 
 exports.createBooking = asyncHandler(async (req, res) => {
     try {
+
         const {
             name,
             phone1,
@@ -26,9 +27,16 @@ exports.createBooking = asyncHandler(async (req, res) => {
             advancePayment,
             balance,
             chequeRequired,
+            bankName,
+            chequeNumber,
             notes,
-            inquiryOnly  // नवीन फ्लॅग
+            inquiryOnly
         } = req.body;
+        if (chequeRequired === "yes") {
+            req.body.chequeRequired = "होय";
+        } else if (chequeRequired === "no") {
+            req.body.chequeRequired = "नाही";
+        }
 
         if (inquiryOnly) {
             // फक्त चौकशीसाठी बेसिक validation
@@ -63,7 +71,7 @@ exports.createBooking = asyncHandler(async (req, res) => {
                 return res.status(400).json({ message: "तारीखांचा स्वरूप चुकीचा आहे." });
             }
 
-            // तारीख ओव्हरलॅप तपासणी
+            // dateOverlap
             const conflict = await BookingForm.findOne({
                 $or: [
                     {
@@ -77,7 +85,7 @@ exports.createBooking = asyncHandler(async (req, res) => {
                 return res.status(400).json({ message: "ही तारीख आधीपासून बुक आहे." });
             }
 
-            // पूर्ण बुकिंग तयार करा
+            //   create a booking
             const booking = await BookingForm.create({
                 name,
                 phone1,
@@ -98,6 +106,8 @@ exports.createBooking = asyncHandler(async (req, res) => {
                 advancePayment,
                 balance,
                 chequeRequired,
+                bankName: chequeRequired === "होय" ? bankName : "",
+                chequeNumber: chequeRequired === "होय" ? chequeNumber : "",
                 notes,
                 inquiryOnly: false,
                 adminId: req.user
@@ -112,6 +122,127 @@ exports.createBooking = asyncHandler(async (req, res) => {
     }
 })
 
+exports.updateBooking = asyncHandler(async (req, res) => {
+    try {
+        const bookingId = req.params.id;
+
+
+        if (req.body.chequeRequired === "yes") {
+            req.body.chequeRequired = "होय";
+        } else if (req.body.chequeRequired === "no") {
+            req.body.chequeRequired = "नाही";
+        }
+
+        const {
+            name,
+            phone1,
+            phone2,
+            address,
+            location,
+            eventType,
+            startDate,
+            endDate,
+            package: pkg,
+            cateringRequired,
+            cateringItems,
+            gatePackageRequired,
+            gatePackageItems,
+            totalRs,
+            discount,
+            finalPrice,
+            advancePayment,
+            balance,
+            chequeRequired,
+            notes,
+            inquiryOnly
+        } = req.body;
+
+        const booking = await BookingForm.findById(bookingId);
+
+        if (!booking) {
+            return res.status(404).json({ message: "बुकिंग सापडले नाही." });
+        }
+
+        if (inquiryOnly) {
+            //    inquery keys
+            if (!name || !phone1 || !address) {
+                return res.status(400).json({ message: "काही आवश्यक फील्ड्स गायब आहेत." });
+            }
+
+            booking.name = name;
+            booking.phone1 = phone1;
+            booking.phone2 = phone2;
+            booking.address = address;
+            booking.notes = notes;
+            booking.inquiryOnly = true;
+
+        } else {
+            // all booking keys
+            if (!name || !phone1 || !address || !location || !eventType
+                || !startDate || !endDate || !pkg || totalRs == null
+                || finalPrice == null || advancePayment == null || balance == null
+                || chequeRequired == null) {
+                return res.status(400).json({ message: "काही आवश्यक फील्ड्स गायब आहेत." });
+            }
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            if (isNaN(start) || isNaN(end)) {
+                return res.status(400).json({ message: "तारीखांचा स्वरूप चुकीचा आहे." });
+            }
+
+            // दुसर्‍या बुकिंगशी ओव्हरलॅप होत आहे का तपासा
+            const conflict = await BookingForm.findOne({
+                _id: { $ne: bookingId },
+                $or: [
+                    {
+                        startDate: { $lte: end },
+                        endDate: { $gte: start }
+                    }
+                ]
+            });
+
+            if (conflict) {
+                return res.status(400).json({ message: "ही तारीख आधीपासून दुसर्‍या बुकिंगसाठी आरक्षित आहे." });
+            }
+
+            // सर्व फील्ड्स अपडेट करा
+            booking.name = name;
+            booking.phone1 = phone1;
+            booking.phone2 = phone2;
+            booking.address = address;
+            booking.location = location;
+            booking.eventType = eventType;
+            booking.startDate = start;
+            booking.endDate = end;
+            booking.package = pkg;
+            booking.cateringRequired = cateringRequired;
+            booking.cateringItems = cateringRequired ? cateringItems : [];
+            booking.gatePackageRequired = gatePackageRequired;
+            booking.gatePackageItems = gatePackageRequired ? gatePackageItems : [];
+            booking.totalRs = totalRs;
+            booking.discount = discount;
+            booking.finalPrice = finalPrice;
+            booking.advancePayment = advancePayment;
+            booking.balance = balance;
+            booking.chequeRequired = chequeRequired;
+            booking.bankName = chequeRequired === "होय" ? bankName : "";
+            booking.chequeNumber = chequeRequired === "होय" ? chequeNumber : "";
+
+            booking.notes = notes;
+            booking.inquiryOnly = false;
+        }
+
+        await booking.save();
+
+        return res.status(200).json({ message: "बुकिंग यशस्वीरित्या अपडेट झाले", booking });
+
+    } catch (error) {
+        console.error("Error in updateBooking:", error);
+        return res.status(500).json({ message: "सर्व्हर एरर" });
+    }
+});
 
 exports.getAllBookingsWithStatus = asyncHandler(async (req, res) => {
     try {
@@ -136,3 +267,22 @@ exports.getAllBookingsWithStatus = asyncHandler(async (req, res) => {
 
 
 
+exports.deleteBooking = asyncHandler(async (req, res) => {
+    try {
+        const bookingId = req.params.id;
+
+        const booking = await BookingForm.findById(bookingId);
+
+        if (!booking) {
+            return res.status(404).json({ message: "बुकिंग सापडले नाही." });
+        }
+
+        await booking.deleteOne();
+
+        return res.status(200).json({ message: "बुकिंग यशस्वीरित्या हटवले गेले." });
+
+    } catch (error) {
+        console.error("Error in deleteBooking:", error);
+        return res.status(500).json({ message: "सर्व्हर एरर" });
+    }
+});

@@ -7,19 +7,17 @@ const GetPackege = ({ formik }) => {
     const [showModal, setShowModal] = useState(false);
     const [selectedYes, setSelectedYes] = useState(false);
 
-    // On mount, set selectedYes based on formik value
     useEffect(() => {
         setSelectedYes(formik.values.gatePackage === "yes");
     }, [formik.values.gatePackage]);
 
-    // Formik चा gatePackageItems array घे
     const gatePackageItems = formik.values.gatePackageItems || [];
 
-    const handleClass = (arg) => clsx(
-        "input input-bordered w-full mt-1 bg-blue-50 text-sm", {
-        "border-red-500": formik.touched[arg] && formik.errors[arg],
-        "border-green-500": formik.touched[arg] && !formik.errors[arg],
-    });
+    const handleClass = (arg) =>
+        clsx("input input-bordered w-full mt-1 bg-blue-50 text-sm", {
+            "border-red-500": formik.touched[arg] && formik.errors[arg],
+            "border-green-500": formik.touched[arg] && !formik.errors[arg],
+        });
 
     const handleRemoveItem = (index) => {
         const updated = [...gatePackageItems];
@@ -40,7 +38,10 @@ const GetPackege = ({ formik }) => {
     };
 
     const handleAddNewItem = () => {
-        formik.setFieldValue("gatePackageItems", [...gatePackageItems, { name: '', quantity: 1 }]);
+        formik.setFieldValue("gatePackageItems", [
+            ...gatePackageItems,
+            { name: '', quantity: 1 }
+        ]);
     };
 
     return (
@@ -54,7 +55,6 @@ const GetPackege = ({ formik }) => {
                         formik.handleChange(e);
                         setSelectedYes(e.target.value === "yes");
                         if (e.target.value !== "yes") {
-                            // Clear items if no
                             formik.setFieldValue("gatePackageItems", []);
                         }
                     }}
@@ -68,7 +68,6 @@ const GetPackege = ({ formik }) => {
                 {formik.touched.gatePackage && formik.errors.gatePackage && (
                     <div className="text-red-500 text-xs">{formik.errors.gatePackage}</div>
                 )}
-
                 {selectedYes && (
                     <div className="mt-2">
                         <button
@@ -83,69 +82,87 @@ const GetPackege = ({ formik }) => {
             </div>
 
             {showModal && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/10 px-4">
-                    <div className="relative bg-white rounded-xl border border-blue-100 shadow-2xl max-w-full sm:w-[600px] md:w-[760px] max-h-[85vh] flex flex-col">
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/20 p-2 sm:p-4">
+                    <div className="relative w-[95%] sm:w-[90%] md:w-[80%] lg:w-[55%] max-w-4xl max-h-[90vh] bg-white text-gray-900 rounded-xl shadow-xl flex flex-col text-sm sm:text-sm md:text-base overflow-hidden">
 
-                        <div className="flex items-center justify-between px-4 sm:px-8 py-3 sm:py-4 border-b border-blue-100 rounded-t-xl bg-gradient-to-r from-blue-50 via-white to-blue-50">
-                            <h2 className="text-lg sm:text-xl font-bold text-blue-700 flex items-center gap-2">
-                                🏰 गेट पॅकेज सजावट
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 via-white to-blue-50">
+                            <h2 className="text-lg sm:text-xl font-semibold text-blue-500 flex items-center gap-2">
+                                <span>🏰</span> गेट पॅकेज सजावट
                             </h2>
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="text-2xl text-blue-400 hover:text-blue-700 transition-all font-light focus:outline-none"
-                                aria-label="Close"
-                            >×</button>
+                                className="text-gray-400 hover:text-blue-700 transition-colors duration-200 text-lg"
+                                aria-label="Close modal"
+                            >
+                                ✖
+                            </button>
                         </div>
 
-                        <div className="px-4 sm:px-8 pt-3 sm:pt-4 overflow-y-auto" style={{ maxHeight: "50vh" }}>
-                            <ul className="space-y-3 pb-2">
-                                {gatePackageItems.map((item, index) => (
-                                    <li key={index} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 pl-2 pb-1">
-                                        <span className="bg-blue-300 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">{index + 1}</span>
-                                        <input
-                                            type="text"
-                                            value={item.name}
-                                            onChange={(e) => handleNameChange(index, e.target.value)}
-                                            placeholder="आयटमचे नाव प्रविष्ट करा"
-                                            className="bg-transparent border-b-2 border-gray-300 text-gray-800 text-sm px-1 py-1 focus:border-gray-600 outline-none flex-1 w-full sm:w-auto"
-                                        />
-                                        <span className="text-gray-700 text-sm font-medium">संख्या</span>
+                        {/* Items list */}
+                        <div className="px-4 sm:px-6 py-4 overflow-y-auto flex-grow space-y-3">
+                            {gatePackageItems.length === 0 && (
+                                <p className="text-gray-400 text-center text-sm">अजून गेट पॅकेज आयटम नाहीत.</p>
+                            )}
+
+                            {gatePackageItems.map((item, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center gap-2 sm:gap-2 sm:w-[96%] bg-blue-50 rounded-md pr-2 pl-1 pb-2"
+                                >
+                                    <span className="bg-blue-500 p-1 ml-1 text-white text-xs sm:text-xs md:text-xs w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center rounded-full select-none">
+                                        {index + 1}
+                                    </span>
+                                    <input
+                                        type="text"
+                                        value={item.name}
+                                        onChange={(e) => handleNameChange(index, e.target.value)}
+                                        placeholder="आयटमचे नाव"
+                                        className="flex-grow min-w-0 bg-transparent text-gray-900 border-0 border-b-2 border-blue-200 focus:border-blue-800 transition-colors duration-300 text-sm font-medium px-0 py-1 sm:py-2 rounded-none outline-none"
+                                    />
+
+                                    {/* Quantity controls */}
+                                    <div className="flex items-center space-x-1 sm:space-x-2">
+                                        <span className="text-gray-700 text-xs sm:text-sm">संख्या</span>
                                         <input
                                             type="number"
                                             min="0"
                                             value={item.quantity}
                                             onChange={(e) => handleQuantityChange(index, e.target.value)}
-                                            className="w-20 sm:w-14 bg-transparent border-b-2 border-gray-300 text-gray-800 text-center focus:border-gray-600 rounded-none outline-none"
+                                            className="w-10 sm:w-12 text-center border border-gray-300 rounded py-0.5 sm:py-1 text-xs sm:text-sm"
                                         />
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveItem(index)}
-                                            className="bg-blue-200 hover:bg-blue-400 text-white rounded-full p-2 text-base transition self-start sm:self-auto"
-                                            aria-label="Remove"
-                                        >✖</button>
-                                    </li>
-                                ))}
-                            </ul>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveItem(index)}
+                                        className="bg-red-100 hover:bg-red-200 text-red-600 font-bold transition-colors duration-200 rounded-md px-1 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-sm ml-1 sm:ml-0"
+                                        aria-label={`Remove ${item.name}`}
+                                    >
+                                        ✖
+                                    </button>
+                                </div>
+                            ))}
                         </div>
 
-                        <div className="px-4 sm:px-8 mt-3">
-                            <div className="bg-blue-50 border border-blue-200 text-blue-700 rounded-md py-3 px-4 text-center">
-                                <p className="text-base font-semibold">नवीन आयटम</p>
+                        {/* Add new item */}
+                        <div className="px-4 sm:px-6 py-4 border-t border-gray-100 bg-gray-50">
+                            <div className="w-full">
                                 <button
                                     type="button"
                                     onClick={handleAddNewItem}
-                                    className="mt-2 px-4 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white w-full sm:w-auto"
+                                    className="w-full bg-blue-500 text-white font-semibold rounded-md py-1.5 sm:py-2 text-xs sm:text-sm hover:bg-blue-600 transition-colors duration-200"
                                 >
                                     + नवीन गेट आयटम जोडा
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex justify-end px-4 sm:px-8 py-4 border-t border-blue-100 bg-white rounded-b-xl ">
+                        {/* Footer */}
+                        <div className="px-4 sm:px-6 py-3 border-t border-gray-100 bg-gray-50 flex justify-end rounded-b-xl">
                             <button
-                                type="button"
                                 onClick={() => setShowModal(false)}
-                                className="bg-green-500 hover:bg-green-600 text-white p-2 pl-2 rounded-sm font-bold text-sm transition"
+                                className="bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200"
                             >
                                 पूर्ण झाले
                             </button>
@@ -153,9 +170,9 @@ const GetPackege = ({ formik }) => {
                     </div>
                 </div>
             )}
+
         </div>
     );
 };
-
 
 export default GetPackege;
