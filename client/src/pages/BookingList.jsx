@@ -1,15 +1,28 @@
 
 import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa";
-import { Link } from "react-router-dom";
-import { useGetBookingsQuery } from "../redux/api/formApi";
+import { Link, useNavigate } from "react-router-dom";
+import { useDeleteBookingMutation, useGetBookingsQuery } from "../redux/api/formApi";
+import { toast } from "react-toastify";
 
 const BookingList = () => {
+    const [deleteBooking] = useDeleteBookingMutation();
+
+    const navigate = useNavigate()
     const [currentPage, setCurrentPage] = useState(1);
     const [usersPerPage, setUsersPerPage] = useState(5);
     const [search, setSearch] = useState("");
 
     const { data = [], isLoading, isError } = useGetBookingsQuery();
+    const handleDelete = async (id) => {
+        try {
+            await deleteBooking(id).unwrap();
+            toast.success("बुकिंग यशस्वीरित्या हटवले गेले ✅");
+        } catch (error) {
+            console.error("❌ Delete failed:", error);
+            toast.error("हटवताना त्रुटी आली ❌");
+        }
+    };
 
     if (isLoading) {
         return <div className="text-center text-xl font-semibold p-10">लोड होत आहे...</div>;
@@ -19,8 +32,6 @@ const BookingList = () => {
         return <div className="text-center text-xl text-red-500 p-10">डेटा मिळाला नाही ❌</div>;
     }
 
-    // ✅ बुकिंग + एनक्वायरी दोन्ही दाखवण्यासाठी कोणतीही फिल्टरिंग नको
-    // फक्त status फील्ड दाखवू
     const formattedData = data.map((item) => ({
         name: item.name || "N/A",
         event: item.eventType || "—",
@@ -74,7 +85,7 @@ const BookingList = () => {
             </div>
 
             {/* 🧾 Table */}
-            <div className="overflow-x-auto p-3">
+            <div className="overflow-x-auto p-3 text-black">
                 <table className="table w-full border">
                     <thead>
                         <tr className="bg-orange-500 text-white text-center">
@@ -122,10 +133,16 @@ const BookingList = () => {
                                     <td>{row.total}</td>
                                     <td>{row.balance}</td>
                                     <td className="flex justify-center gap-2">
-                                        <button className="btn btn-sm bg-orange-500 text-white">
+                                        <button
+                                            className="btn btn-sm bg-orange-500 text-white"
+                                            onClick={() => navigate("/form", { state: { booking: data[index] } })}
+                                        >
                                             संपादित करा
                                         </button>
-                                        <button className="btn btn-sm bg-red-500 text-white">
+                                        <button
+                                            className="btn btn-sm bg-red-500 text-white"
+                                            onClick={() => handleDelete(data[index]._id)}
+                                        >
                                             हटवा
                                         </button>
 
