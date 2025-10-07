@@ -14,7 +14,6 @@ const UserInfo = ({ formik }) => {
                 ग्राहकाची माहिती
             </h2>
 
-            {/* Grid Layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* नाव */}
                 <div className="flex flex-col">
@@ -30,7 +29,6 @@ const UserInfo = ({ formik }) => {
                     )}
                 </div>
 
-                {/* फोन नंबर 1 */}
                 <div className="flex flex-col">
                     <label className="font-semibold mb-1 block">* फोन नंबर 1</label>
                     <input

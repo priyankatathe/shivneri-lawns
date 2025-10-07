@@ -7,9 +7,16 @@ const GetPackege = ({ formik }) => {
     const [showModal, setShowModal] = useState(false);
     const [selectedYes, setSelectedYes] = useState(false);
 
+    // Reflect initial formik value for gatePackage to local state so the manage button shows on edit
     useEffect(() => {
-        setSelectedYes(formik.values.gatePackage === "yes");
-    }, [formik.values.gatePackage]);
+        if (formik?.values?.gatePackage === "yes") {
+            setSelectedYes(true)
+        } else {
+            setSelectedYes(false)
+        }
+    }, [formik?.values?.gatePackage])
+
+
 
     const gatePackageItems = formik.values.gatePackageItems || [];
 
@@ -45,25 +52,22 @@ const GetPackege = ({ formik }) => {
     };
 
     return (
+
+
         <div className='overflow-hidden'>
+
+
             <div className="mb-4">
                 <label className="font-semibold text-sm">गेट पॅकेज आवश्यक आहे का? *</label>
                 <select
-                    name="gatePackage"
-                    value={formik.values.gatePackage}
-                    onChange={(e) => {
-                        formik.handleChange(e);
-                        setSelectedYes(e.target.value === "yes");
-                        if (e.target.value !== "yes") {
-                            formik.setFieldValue("gatePackageItems", []);
-                        }
-                    }}
-                    onBlur={formik.handleBlur}
                     className={handleClass("gatePackage")}
+                    {...formik.getFieldProps("gatePackage")}
+                    name="gatePackage"
+
                 >
                     <option value="">-- निवडा --</option>
-                    <option value="yes">होय</option>
-                    <option value="no">नाही</option>
+                    <option value="होय">होय</option>
+                    <option value="नाही">नाही</option>
                 </select>
                 {formik.touched.gatePackage && formik.errors.gatePackage && (
                     <div className="text-red-500 text-xs">{formik.errors.gatePackage}</div>

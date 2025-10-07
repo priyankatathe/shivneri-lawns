@@ -13,54 +13,72 @@ import { useEffect, useState } from "react";
 import { useCreateBookingMutation, useDeleteBookingMutation, useUpdateBookingMutation } from "../redux/api/formApi";
 
 const Form = () => {
-    const [deleteBooking, { isSuccess, isError, error }] = useDeleteBookingMutation()
     const [createBooking] = useCreateBookingMutation();
     const [updateBooking] = useUpdateBookingMutation()
+    // const [UpdateData, setUpdateData] = useState()
     const location = useLocation();
     const editingData = location.state?.booking || null;
+
+    console.log(editingData)
+
 
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
 
+    useEffect(() => {
+        console.log("🟢 Editing data catering:", editingData?.catering);
+    }, [editingData]);
+
 
     const formik = useFormik({
+        enableReinitialize: true,
         initialValues: {
-            bankName: "",
-            chequeNumber: "",
-            notes: "",
-            name: "",
-            phone1: "",
-            phone2: "",
-            address: "",
-            location: "",
-            eventType: "",
-            startDate: "",
-            endDate: "",
-            package: "",
-            cateringRequired: false,
-            catering: "",
-            cateringItems: [
-                { name: "पाणी", quantity: 1 },
-                { name: "भाजी", quantity: 1 },
-                { name: "पोळी", quantity: 1 },
-                { name: "लिंबू सरबत", quantity: 1 },
-                { name: "समोसा", quantity: 1 },
-                { name: "चहा", quantity: 1 },
-                { name: "कढीपत्ता", quantity: 1 },
-            ],
-            gatePackageRequired: false,
-            gatePackageItems: [
-                { name: "तुतारी", quantity: 1 },
-                { name: "भालदार", quantity: 1 },
-                { name: "फुलांची कमान", quantity: 1 },
-            ],
-            totalRs: "",
-            discount: 0,
-            finalPrice: "",
-            advancePayment: "",
-            balance: 0,
-            chequeRequired: "",
-            notes: "",
+            catering: editingData?.catering || "",
+            cateringItems: editingData?.cateringItems?.length
+                ? editingData.cateringItems.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity ?? 1,
+                }))
+                : [
+                    { name: "पाणी", quantity: 1 },
+                    { name: "भाजी", quantity: 1 },
+                    { name: "पोळी", quantity: 1 },
+                    { name: "लिंबू सरबत", quantity: 1 },
+                    { name: "समोसा", quantity: 1 },
+                    { name: "चहा", quantity: 1 },
+                    { name: "कढीपत्ता", quantity: 1 },
+                ],
+
+
+            gatePackage: editingData?.gatePackage || "",
+            gatePackageItems: editingData?.gatePackageItems?.length
+                ? editingData.gatePackageItems.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity ?? 1,
+                }))
+                : [
+                    { name: "तुतारी", quantity: 1 },
+                    { name: "भालदार", quantity: 1 },
+                    { name: "फुलांची कमान", quantity: 1 },
+                ],
+            bankName: editingData?.bankName || "",
+            chequeNumber: editingData?.chequeNumber || "",
+            notes: editingData?.notes || "",
+            name: editingData?.name || "",
+            phone1: editingData?.phone1 || "",
+            phone2: editingData?.phone2 || "",
+            address: editingData?.address || "",
+            location: editingData?.location || "",
+            eventType: editingData?.eventType || "",
+            startDate: editingData?.startDate?.split("T")[0] || "",
+            endDate: editingData?.endDate?.split("T")[0] || "",
+            package: editingData?.package || "",
+            totalRs: editingData?.totalRs || "",
+            discount: editingData?.discount || 0,
+            finalPrice: editingData?.finalPrice || "",
+            advancePayment: editingData?.advancePayment || "",
+            balance: editingData?.balance || 0,
+            chequeRequired: editingData?.chequeRequired || "",
             inquiryOnly: false,
         },
         validationSchema: yup.object({
@@ -97,6 +115,7 @@ const Form = () => {
             notes: yup.string().notRequired(),
         }),
         onSubmit: async (values, { resetForm }) => {
+            console.log("Submitting values:", values);
             console.log("Submitting chequeRequired:", values.chequeRequired);
             const cleanCateringItems = Array.isArray(values.cateringItems)
                 ? values.cateringItems.filter((item) => item.name && item.quantity != null)
@@ -139,34 +158,6 @@ const Form = () => {
             }
         }
     })
-
-
-
-    useEffect(() => {
-        if (editingData) {
-            const { _id, startDate, endDate, ...rest } = editingData;
-
-            formik.resetForm({
-                values: {
-                    ...formik.initialValues,
-                    ...rest,
-                    startDate: startDate ? startDate.slice(0, 10) : "",
-                    endDate: endDate ? endDate.slice(0, 10) : "",
-                    chequeRequired: rest.chequeRequired || "",
-                    bankName: rest.bankName || "",
-                    chequeNumber: rest.chequeNumber || "",
-                    cateringItems: rest.cateringItems || formik.initialValues.cateringItems,
-                    gatePackageItems: rest.gatePackageItems || formik.initialValues.gatePackageItems,
-                    cateringRequired: rest.cateringRequired ?? false,
-                    gatePackageRequired: rest.gatePackageRequired ?? false,
-                    inquiryOnly: rest.inquiryOnly ?? false,
-                },
-            });
-
-            setIsEditing(true);
-            setEditingId(_id);
-        }
-    }, [editingData]);
 
 
     const handleInquiryClick = async () => {

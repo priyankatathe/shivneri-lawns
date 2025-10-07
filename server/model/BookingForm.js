@@ -56,7 +56,7 @@ const BookingSchema = new mongoose.Schema({
     },
     notes: { type: String },
 
-    // Inquiry Flag
+
     inquiryOnly: { type: Boolean, default: false },
 
     createdAt: { type: Date, default: Date.now },

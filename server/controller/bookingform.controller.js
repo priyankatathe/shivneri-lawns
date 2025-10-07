@@ -37,25 +37,27 @@ exports.createBooking = asyncHandler(async (req, res) => {
         } else if (chequeRequired === "no") {
             req.body.chequeRequired = "नाही";
         }
-
         if (inquiryOnly) {
-            // फक्त चौकशीसाठी बेसिक validation
             if (!name || !phone1 || !address) {
                 return res.status(400).json({ message: "काही आवश्यक फील्ड्स गायब आहेत." });
             }
 
-            // चौकशी म्हणून बुकिंग तयार करा (बाकी फील्ड्स optional ठेवा)
-            const booking = await BookingForm.create({
+            // फक्त आवश्यक फील्ड्स ठेवा
+            const inquiryData = {
                 name,
                 phone1,
-                phone2,
+                phone2: phone2 || "",
                 address,
+                notes,
                 inquiryOnly: true,
-                // बाकी फील्ड्स रिकाम्या किंवा default
-            });
+                adminId: req.user,
+            };
+
+            const booking = await BookingForm.create(inquiryData);
 
             return res.status(201).json({ message: "चौकशी यशस्वी झाली", booking });
-        } else {
+        }
+        else {
             // पूर्ण बुकिंगसाठी validation
             if (!name || !phone1 || !address || !location || !eventType
                 || !startDate || !endDate || !pkg || totalRs == null
@@ -153,6 +155,8 @@ exports.updateBooking = asyncHandler(async (req, res) => {
             advancePayment,
             balance,
             chequeRequired,
+            bankName,
+            chequeNumber,
             notes,
             inquiryOnly
         } = req.body;

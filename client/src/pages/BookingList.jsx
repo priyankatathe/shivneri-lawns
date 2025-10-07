@@ -32,7 +32,23 @@ const BookingList = () => {
         return <div className="text-center text-xl text-red-500 p-10">डेटा मिळाला नाही ❌</div>;
     }
 
+    // const formattedData = data.map((item) => ({
+    //     name: item.name || "N/A",
+    //     event: item.eventType || "—",
+    //     date:
+    //         item.startDate && item.endDate
+    //             ? `${new Date(item.startDate).toLocaleDateString()} - ${new Date(item.endDate).toLocaleDateString()}`
+    //             : "N/A",
+    //     venue: item.location || "N/A",
+    //     phone: [item.phone1, item.phone2].filter(Boolean),
+    //     status: item.status || "Enquiry", // जर status नसली तरी "Enquiry" दाखवेल
+    //     total: item.totalRs || "-",
+    //     balance: item.balance || "-",
+    // }));
+
     const formattedData = data.map((item) => ({
+        _id: item._id,
+        original: item, // 👉 मूळ डेटा साठव
         name: item.name || "N/A",
         event: item.eventType || "—",
         date:
@@ -41,10 +57,11 @@ const BookingList = () => {
                 : "N/A",
         venue: item.location || "N/A",
         phone: [item.phone1, item.phone2].filter(Boolean),
-        status: item.status || "Enquiry", // जर status नसली तरी "Enquiry" दाखवेल
+        status: item.status || "Enquiry",
         total: item.totalRs || "-",
         balance: item.balance || "-",
     }));
+
 
     // 🔍 Search filter (सर्चने Enquiry पण शोधता येईल)
     const filteredData = formattedData.filter((row) => {
@@ -66,7 +83,7 @@ const BookingList = () => {
     return (
         <div className="p-6">
             <h2 className="text-center text-2xl font-bold mb-4">बुकिंग / एनक्वायरी लिस्ट</h2>
-
+            {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
             {/* 🔍 Search Bar */}
             <div className="bg-white p-4 rounded-md mb-4">
                 <div className="flex items-center gap-2 border rounded p-3">
@@ -102,55 +119,95 @@ const BookingList = () => {
                     </thead>
                     <tbody>
                         {currentRows.length > 0 ? (
+                            // currentRows.map((row, index) => (
+                            //     <tr
+                            //         key={index}
+                            //         className={`text-center ${row.status === "Enquiry"
+                            //             ? "bg-yellow-50"
+                            //             : "bg-white"
+                            //             }`}
+                            //     >
+                            //         <td>{row.name}</td>
+                            //         <td>{row.event}</td>
+                            //         <td>{row.date}</td>
+                            //         <td>{row.venue}</td>
+                            //         <td>
+                            //             {row.phone.map((num, i) => (
+                            //                 <div key={i}>{num}</div>
+                            //             ))}
+                            //         </td>
+
+                            //         {/* Enquiry असल्यास वेगळं रंग दाखवू */}
+                            //         <td
+                            //             className={`font-semibold ${row.status === "Enquiry"
+                            //                 ? "text-yellow-600"
+                            //                 : "text-green-600"
+                            //                 }`}
+                            //         >
+                            //             {row.status}
+                            //         </td>
+
+                            //         <td>{row.total}</td>
+                            //         <td>{row.balance}</td>
+                            //         <td className="flex justify-center gap-2">
+                            //             <button
+                            //                 className="btn btn-sm bg-orange-500 text-white"
+                            //                 onClick={() => navigate("/form", { state: { booking: data[index] } })}
+                            //             >
+                            //                 संपादित करा
+                            //             </button>
+                            //             <button
+                            //                 className="btn btn-sm bg-red-500 text-white"
+                            //                 onClick={() => handleDelete(data[index]._id)}
+                            //             >
+                            //                 हटवा
+                            //             </button>
+
+
+                            //             {row.status !== "Enquiry" && (
+                            //                 <Link
+                            //                     to="/bill"
+                            //                     state={{ booking: data[index] }}  // 👉 मूळ MongoDB डेटा पास कर
+                            //                     className="btn btn-sm bg-blue-500 text-white"
+                            //                 >
+                            //                     View Bill
+                            //                 </Link>
+                            //             )}
+                            //         </td>
+                            //     </tr>
+                            // ))
+
                             currentRows.map((row, index) => (
-                                <tr
-                                    key={index}
-                                    className={`text-center ${row.status === "Enquiry"
-                                        ? "bg-yellow-50"
-                                        : "bg-white"
-                                        }`}
-                                >
+                                <tr key={row._id} className={`text-center ${row.status === "Enquiry" ? "bg-yellow-50" : "bg-white"}`}>
                                     <td>{row.name}</td>
                                     <td>{row.event}</td>
                                     <td>{row.date}</td>
                                     <td>{row.venue}</td>
-                                    <td>
-                                        {row.phone.map((num, i) => (
-                                            <div key={i}>{num}</div>
-                                        ))}
-                                    </td>
-
-                                    {/* Enquiry असल्यास वेगळं रंग दाखवू */}
-                                    <td
-                                        className={`font-semibold ${row.status === "Enquiry"
-                                            ? "text-yellow-600"
-                                            : "text-green-600"
-                                            }`}
-                                    >
+                                    <td>{row.phone.map((num, i) => <div key={i}>{num}</div>)}</td>
+                                    <td className={`font-semibold ${row.status === "Enquiry" ? "text-yellow-600" : "text-green-600"}`}>
                                         {row.status}
                                     </td>
-
                                     <td>{row.total}</td>
                                     <td>{row.balance}</td>
                                     <td className="flex justify-center gap-2">
                                         <button
                                             className="btn btn-sm bg-orange-500 text-white"
-                                            onClick={() => navigate("/form", { state: { booking: data[index] } })}
+                                            onClick={() => navigate("/form", { state: { booking: row.original } })} // ✅ आता योग्य डेटा जातो
                                         >
                                             संपादित करा
                                         </button>
+
                                         <button
                                             className="btn btn-sm bg-red-500 text-white"
-                                            onClick={() => handleDelete(data[index]._id)}
+                                            onClick={() => handleDelete(row._id)} // ✅ योग्य आयडी
                                         >
                                             हटवा
                                         </button>
 
-                                        {/* फक्त Booking झालं असेल तरच बिल बटन */}
                                         {row.status !== "Enquiry" && (
                                             <Link
                                                 to="/bill"
-                                                state={{ booking: data[index] }}  // 👉 मूळ MongoDB डेटा पास कर
+                                                state={{ booking: row.original }} // ✅ योग्य डेटा पास
                                                 className="btn btn-sm bg-blue-500 text-white"
                                             >
                                                 View Bill
@@ -159,6 +216,7 @@ const BookingList = () => {
                                     </td>
                                 </tr>
                             ))
+
                         ) : (
                             <tr>
                                 <td colSpan="9" className="text-center p-4">
