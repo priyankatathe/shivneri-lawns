@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { toast } from "react-toastify";
@@ -10,15 +10,12 @@ import UserInfo from "./UserInfo";
 import { useCreateBookingMutation } from "../redux/api/formApi";
 
 const Form = () => {
-    const [createBooking] = useCreateBookingMutation()
-    const [totalPrice, setTotalPrice] = useState("");
-    const [discount, setDiscount] = useState("");
-    const [finalPrice, setFinalPrice] = useState(0);
-    const [advancePayment, setAdvancePayment] = useState("");
-    const [balance, setBalance] = useState(0);
+    const [createBooking] = useCreateBookingMutation();
 
     const validationSchema = yup.object({
         name: yup.string().required("ग्राहकाचे नाव आवश्यक आहे"),
+        phone1: yup.string().required("फोन नंबर आवश्यक आहे"),
+        address: yup.string().required("पत्ता आवश्यक आहे"),
         location: yup.string().required("ठिकाण निवडा"),
         eventType: yup.string().required("इव्हेंट प्रकार आवश्यक आहे"),
         startDate: yup.date().required("प्रारंभ तारीख आवश्यक आहे"),
@@ -43,9 +40,22 @@ const Form = () => {
             endDate: "",
             package: "",
             cateringRequired: false,
-            cateringItems: [],
+            catering: "yes",
+            cateringItems: [
+                { name: "पाणी", quantity: 1 },
+                { name: "भाजी", quantity: 1 },
+                { name: "पोळी", quantity: 1 },
+                { name: "लिंबू सरबत", quantity: 1 },
+                { name: "समोसा", quantity: 1 },
+                { name: "चहा", quantity: 1 },
+                { name: "कढीपत्ता", quantity: 1 },
+            ],
             gatePackageRequired: false,
-            gatePackageItems: [],
+            gatePackageItems: [
+                { name: "तुतारी", quantity: 1 },
+                { name: "भालदार", quantity: 2 },
+                { name: "फुलांची कमान", quantity: 1 },
+            ],
             totalRs: 0,
             discount: 0,
             finalPrice: 0,
@@ -54,29 +64,40 @@ const Form = () => {
             chequeRequired: "",
             notes: "",
             inquiryOnly: false,
-
-
         },
-
         validationSchema,
         onSubmit: async (values, { resetForm }) => {
+            console.log("Form submitting values:", values);
+
+            const cleanCateringItems = Array.isArray(values.cateringItems)
+                ? values.cateringItems.filter((item) => item.name && item.quantity != null)
+                : [];
+
+            const cleanGatePackageItems = Array.isArray(values.gatePackageItems)
+                ? values.gatePackageItems.filter((item) => item.name && item.quantity != null)
+                : [];
+
+            const cateringRequired = cleanCateringItems.length > 0;
+            const gatePackageRequired = cleanGatePackageItems.length > 0;
+
+            const payload = {
+                ...values,
+                cateringItems: cleanCateringItems,
+                gatePackageItems: cleanGatePackageItems,
+                cateringRequired,
+                gatePackageRequired,
+            };
+
             try {
-                const response = await createBooking(values).unwrap();
-                toast.success("फॉर्म यशस्वीपणे सबमिट झाला!");
-                console.log("Submitted values:", response);
+                await createBooking(payload).unwrap();
+                toast.success("Booking created successfully!");
                 resetForm();
-                setTotalPrice("");
-                setDiscount("");
-                setAdvancePayment("");
-                setBalance("");
             } catch (error) {
-                console.error("Form submit error:", error);
-                toast.error(error?.data?.message || "फॉर्म सबमिट करताना त्रुटी आली!");
+                toast.error(error?.data?.message || "Booking creation failed!");
             }
-        }
-
-
+        },
     });
+
     const handleInquiryClick = async () => {
         const inquiryData = {
             name: formik.values.name,
@@ -91,14 +112,13 @@ const Form = () => {
         }
 
         try {
-            const response = await createBooking(inquiryData).unwrap();
+            await createBooking(inquiryData).unwrap();
             toast.success("चौकशी यशस्वी झाली!");
             formik.resetForm();
         } catch (error) {
             toast.error(error?.data?.message || "चौकशी करताना त्रुटी आली!");
         }
     };
-
 
     const handleClass = (field) =>
         clsx("input input-bordered w-full bg-blue-50 focus:bg-white transition", {
@@ -107,15 +127,18 @@ const Form = () => {
         });
 
     return (
-        <div className="min-h-screen overflow-hidden bg-gray-100 flex items-center justify-center p-6">
-            <div className="relative max-w-6xl w-full mx-auto p-8 bg-white rounded-2xl shadow-lg border border-gray-200">
-                <div className="mb-10 flex items-center justify-center gap-3">
+
+
+        <div className="min-h-screen  overflow-hidden bg-gray-100 flex items-center justify-center p-4 sm:p-6 ">
+
+            <div className="relative max-w-6xl mx-auto p-6 sm:p-8 bg-white rounded-2xl shadow-lg border border-gray-200">
+                <div className="mb-10 flex items-center justify-center gap-3 flex-wrap text-center">
                     <img
                         src="https://cdn-icons-png.freepik.com/512/2037/2037690.png"
                         alt="Event icon"
                         className="w-10 h-10 rounded-lg"
                     />
-                    <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">
                         इव्हेंट मॅनेजमेंट फॉर्म
                     </h2>
                 </div>
@@ -125,100 +148,70 @@ const Form = () => {
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 text-gray-800"
                 >
 
+                    {/* lg:w-[318%] md:w-[209%] w-full overflow-hidden */}
+                    {/* lg:w-[318%] md:w-[209%] w-full overflow-hidden */}
+
                     <UserInfo formik={formik} />
+                    <div className="grid lg:mt-0   md:mt-80 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6  overflow-hidden lg:col-span-3">
 
-
-
-                    <div className="flex flex-row gap-6 lg:col-span-3">
-                        {/* ठिकाण */}
-                        <div className="flex flex-col w-1/3">
+                        <div className="flex   flex-col bg-red-50 p-5 ">
                             <label className="font-semibold mb-1">* ठिकाण निवडा</label>
-                            <select
-                                className={handleClass("location")}
-                                {...formik.getFieldProps("location")}
-                            >
+                            <select className={handleClass("location")} {...formik.getFieldProps("location")}>
                                 <option value="">निवडा</option>
                                 <option value="Lawn">Lawn</option>
                                 <option value="Banquet">Banquet</option>
                                 <option value="Both">Both</option>
                             </select>
                             {formik.touched.location && formik.errors.location && (
-                                <p className="text-red-600 text-sm mt-1">
-                                    {formik.errors.location}
-                                </p>
+                                <p className="text-red-600 text-sm mt-1">{formik.errors.location}</p>
                             )}
                         </div>
 
                         {/* इव्हेंट प्रकार */}
-                        <div className="flex flex-col w-1/3">
+                        <div className="flex flex-col">
                             <label className="font-semibold mb-1">* इव्हेंट प्रकार</label>
-                            <select
-                                className={handleClass("eventType")}
-                                {...formik.getFieldProps("eventType")}
-                            >
+                            <select className={handleClass("eventType")} {...formik.getFieldProps("eventType")}>
                                 <option value="">निवडा</option>
-                                <option value="Lawn">lagn</option>
-                                <option value="Banquet">haldi</option>
-                                <option value="Both">mehndi</option>
+                                <option value="Lagn">लग्न</option>
+                                <option value="Haldi">हल्दी</option>
+                                <option value="Mehndi">मेहंदी</option>
                             </select>
                             {formik.touched.eventType && formik.errors.eventType && (
-                                <p className="text-red-600 text-sm mt-1">
-                                    {formik.errors.eventType}
-                                </p>
+                                <p className="text-red-600 text-sm mt-1">{formik.errors.eventType}</p>
                             )}
                         </div>
 
                         {/* पॅकेज निवडा */}
-                        <div className="flex flex-col w-1/3">
+                        <div className="flex flex-col">
                             <label className="font-semibold mb-1">* पॅकेज निवडा</label>
-                            <select
-                                className={handleClass("package")}
-                                {...formik.getFieldProps("package")}
-                            >
+                            <select className={handleClass("package")} {...formik.getFieldProps("package")}>
                                 <option value="">-- निवडा --</option>
                                 <option value="Basic">Basic</option>
                                 <option value="Standard">Standard</option>
                                 <option value="Premium">Premium</option>
                             </select>
                             {formik.touched.package && formik.errors.package && (
-                                <p className="text-red-600 text-sm mt-1">
-                                    {formik.errors.package}
-                                </p>
+                                <p className="text-red-600 text-sm mt-1">{formik.errors.package}</p>
                             )}
                         </div>
                     </div>
 
-                    {/* प्रारंभ तारीख */}
+                    {/* प्रारंभ आणि समाप्त तारीख */}
                     <div>
                         <label className="font-semibold mb-1 block">* प्रारंभ तारीख</label>
-                        <input
-                            type="date"
-                            className={handleClass("startDate")}
-                            {...formik.getFieldProps("startDate")}
-                        />
+                        <input type="date" className={handleClass("startDate")} {...formik.getFieldProps("startDate")} />
                         {formik.touched.startDate && formik.errors.startDate && (
-                            <p className="text-red-600 text-sm mt-1">
-                                {formik.errors.startDate}
-                            </p>
+                            <p className="text-red-600 text-sm mt-1">{formik.errors.startDate}</p>
                         )}
                     </div>
 
-                    {/* समाप्त तारीख */}
                     <div>
                         <label className="font-semibold mb-1 block">* समाप्त तारीख</label>
-                        <input
-                            type="date"
-                            className={handleClass("endDate")}
-                            {...formik.getFieldProps("endDate")}
-                        />
+                        <input type="date" className={handleClass("endDate")} {...formik.getFieldProps("endDate")} />
                         {formik.touched.endDate && formik.errors.endDate && (
-                            <p className="text-red-600 text-sm mt-1">
-                                {formik.errors.endDate}
-                            </p>
+                            <p className="text-red-600 text-sm mt-1">{formik.errors.endDate}</p>
                         )}
                     </div>
-
-
 
                     {/* Catering, GetPackege */}
                     <div>
@@ -230,10 +223,8 @@ const Form = () => {
 
                     {/* चेक तपशील */}
                     <div className="lg:col-span-3">
-                        <label className="font-semibold block mb-2">
-                            चेक तपशील आवश्यक आहे का?
-                        </label>
-                        <div className="flex gap-8">
+                        <label className="font-semibold block mb-2">चेक तपशील आवश्यक आहे का?</label>
+                        <div className="flex gap-8 flex-wrap">
                             <label className="flex items-center gap-2">
                                 <input
                                     type="radio"
@@ -258,16 +249,12 @@ const Form = () => {
                             </label>
                         </div>
                         {formik.touched.chequeRequired && formik.errors.chequeRequired && (
-                            <p className="text-red-600 text-sm mt-1">
-                                {formik.errors.chequeRequired}
-                            </p>
+                            <p className="text-red-600 text-sm mt-1">{formik.errors.chequeRequired}</p>
                         )}
                     </div>
 
-                    {/* Calculation logic */}
-                    {/* <div className="lg:col-span-3"> */}
+                    {/* Calculation Logic */}
                     <Calculationlogic formik={formik} />
-                    {/* </div> */}
 
                     {/* नोट्स */}
                     <div className="lg:col-span-3">
@@ -281,8 +268,7 @@ const Form = () => {
                     </div>
 
                     {/* Buttons */}
-                    <div className="lg:col-span-3 flex flex-col md:flex-row justify-end gap-4 pt-6">
-                        {/* <button type="button" onClick={handleInquirySubmit}>फक्त चौकशी साठी</button> */}
+                    <div className="lg:col-span-3 flex flex-col sm:flex-row justify-end gap-4 pt-6">
                         <button
                             onClick={handleInquiryClick}
                             type="button"

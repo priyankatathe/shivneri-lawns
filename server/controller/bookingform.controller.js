@@ -113,18 +113,44 @@ exports.createBooking = asyncHandler(async (req, res) => {
 })
 
 
+// exports.getAllBookingsWithStatus = asyncHandler(async (req, res) => {
+//     try {
+//         // req.user.id should be the logged-in admin's ID
+//         const adminId = req.user;
+
+//         // Find bookings created by this admin only
+//         const bookings = await BookingForm.find({ adminId }).sort({ createdAt: -1 });
+
+//         // Add status field
+//         const bookingsWithStatus = bookings.map(b => ({
+//             ...b._doc,
+//             status: b.inquiryOnly ? "Inquiry" : "Booking"
+//         }));
+
+//         return res.status(200).json(bookingsWithStatus);
+//     } catch (error) {
+//         console.error("Error in getAllBookingsWithStatus:", error);
+//         return res.status(500).json({ message: "Server error" });
+//     }
+// });
+
+
+
+
+
+
+
 exports.getAllBookingsWithStatus = asyncHandler(async (req, res) => {
     try {
-        // req.user.id should be the logged-in admin's ID
-        const adminId = req.user;
+        const adminId = req.user._id; // logged-in admin ID
 
-        // Find bookings created by this admin only
+        // Fetch all bookings and inquiries created by this admin
         const bookings = await BookingForm.find({ adminId }).sort({ createdAt: -1 });
 
-        // Add status field
+        // Assign status based on inquiryOnly flag
         const bookingsWithStatus = bookings.map(b => ({
             ...b._doc,
-            status: b.inquiryOnly ? "Inquiry" : "Booking"
+            status: b.status || (b.inquiryOnly ? "Inquiry" : "Booking")
         }));
 
         return res.status(200).json(bookingsWithStatus);
@@ -133,6 +159,3 @@ exports.getAllBookingsWithStatus = asyncHandler(async (req, res) => {
         return res.status(500).json({ message: "Server error" });
     }
 });
-
-
-

@@ -1,18 +1,19 @@
 import { useFormik } from 'formik';
 import * as yup from "yup";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 
 const GetPackege = ({ formik }) => {
-    const [getPackege, setGetPackege] = useState([
-        { name: 'तुतारी', quantity: 1 },
-        { name: 'भालदार', quantity: 2 },
-        { name: 'फुलांची कमान', quantity: 1 },
-    ]);
-
     const [showModal, setShowModal] = useState(false);
     const [selectedYes, setSelectedYes] = useState(false);
 
+    // On mount, set selectedYes based on formik value
+    useEffect(() => {
+        setSelectedYes(formik.values.gatePackage === "yes");
+    }, [formik.values.gatePackage]);
+
+    // Formik चा gatePackageItems array घे
+    const gatePackageItems = formik.values.gatePackageItems || [];
 
     const handleClass = (arg) => clsx(
         "input input-bordered w-full mt-1 bg-blue-50 text-sm", {
@@ -21,30 +22,29 @@ const GetPackege = ({ formik }) => {
     });
 
     const handleRemoveItem = (index) => {
-        const updated = [...getPackege];
+        const updated = [...gatePackageItems];
         updated.splice(index, 1);
-        setGetPackege(updated);
+        formik.setFieldValue("gatePackageItems", updated);
     };
 
     const handleQuantityChange = (index, value) => {
-        const updated = [...getPackege];
-        updated[index].quantity = parseInt(value) || 0;
-        setGetPackege(updated);
+        const updated = [...gatePackageItems];
+        updated[index] = { ...updated[index], quantity: parseInt(value) || 0 };
+        formik.setFieldValue("gatePackageItems", updated);
     };
 
     const handleNameChange = (index, value) => {
-        const updated = [...getPackege];
-        updated[index].name = value;
-        setGetPackege(updated);
+        const updated = [...gatePackageItems];
+        updated[index] = { ...updated[index], name: value };
+        formik.setFieldValue("gatePackageItems", updated);
     };
 
     const handleAddNewItem = () => {
-        setGetPackege([...getPackege, { name: '', quantity: 1 }]);
+        formik.setFieldValue("gatePackageItems", [...gatePackageItems, { name: '', quantity: 1 }]);
     };
 
     return (
         <div className='overflow-hidden'>
-            {/* Select Box */}
             <div className="mb-4">
                 <label className="font-semibold text-sm">गेट पॅकेज आवश्यक आहे का? *</label>
                 <select
@@ -52,10 +52,10 @@ const GetPackege = ({ formik }) => {
                     value={formik.values.gatePackage}
                     onChange={(e) => {
                         formik.handleChange(e);
-                        if (e.target.value === "yes") {
-                            setSelectedYes(true);
-                        } else {
-                            setSelectedYes(false);
+                        setSelectedYes(e.target.value === "yes");
+                        if (e.target.value !== "yes") {
+                            // Clear items if no
+                            formik.setFieldValue("gatePackageItems", []);
                         }
                     }}
                     onBlur={formik.handleBlur}
@@ -69,7 +69,6 @@ const GetPackege = ({ formik }) => {
                     <div className="text-red-500 text-xs">{formik.errors.gatePackage}</div>
                 )}
 
-                {/* Button */}
                 {selectedYes && (
                     <div className="mt-2">
                         <button
@@ -83,13 +82,10 @@ const GetPackege = ({ formik }) => {
                 )}
             </div>
 
-            {/* Modal */}
-            {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/10 px-4">
                     <div className="relative bg-white rounded-xl border border-blue-100 shadow-2xl max-w-full sm:w-[600px] md:w-[760px] max-h-[85vh] flex flex-col">
 
-                        {/* Header */}
                         <div className="flex items-center justify-between px-4 sm:px-8 py-3 sm:py-4 border-b border-blue-100 rounded-t-xl bg-gradient-to-r from-blue-50 via-white to-blue-50">
                             <h2 className="text-lg sm:text-xl font-bold text-blue-700 flex items-center gap-2">
                                 🏰 गेट पॅकेज सजावट
@@ -101,10 +97,9 @@ const GetPackege = ({ formik }) => {
                             >×</button>
                         </div>
 
-                        {/* Scrollable Items List */}
                         <div className="px-4 sm:px-8 pt-3 sm:pt-4 overflow-y-auto" style={{ maxHeight: "50vh" }}>
                             <ul className="space-y-3 pb-2">
-                                {getPackege.map((item, index) => (
+                                {gatePackageItems.map((item, index) => (
                                     <li key={index} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pr-2 pl-2 pb-1">
                                         <span className="bg-blue-300 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">{index + 1}</span>
                                         <input
@@ -133,7 +128,6 @@ const GetPackege = ({ formik }) => {
                             </ul>
                         </div>
 
-                        {/* New Item Card */}
                         <div className="px-4 sm:px-8 mt-3">
                             <div className="bg-blue-50 border border-blue-200 text-blue-700 rounded-md py-3 px-4 text-center">
                                 <p className="text-base font-semibold">नवीन आयटम</p>
@@ -147,7 +141,6 @@ const GetPackege = ({ formik }) => {
                             </div>
                         </div>
 
-                        {/* Footer */}
                         <div className="flex justify-end px-4 sm:px-8 py-4 border-t border-blue-100 bg-white rounded-b-xl ">
                             <button
                                 type="button"
@@ -160,10 +153,9 @@ const GetPackege = ({ formik }) => {
                     </div>
                 </div>
             )}
-
-
         </div>
     );
 };
+
 
 export default GetPackege;
