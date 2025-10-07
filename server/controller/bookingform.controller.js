@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const BookingForm = require("../model/BookingForm");
-
+const mongoose = require("mongoose");
 
 
 
@@ -51,6 +51,7 @@ exports.createBooking = asyncHandler(async (req, res) => {
                 phone2,
                 address,
                 inquiryOnly: true,
+                adminId: req.user
                 // बाकी फील्ड्स रिकाम्या किंवा default
             });
 
@@ -73,6 +74,7 @@ exports.createBooking = asyncHandler(async (req, res) => {
 
             // dateOverlap
             const conflict = await BookingForm.findOne({
+                adminId: req.user,
                 $or: [
                     {
                         startDate: { $lte: end },
@@ -111,6 +113,8 @@ exports.createBooking = asyncHandler(async (req, res) => {
                 notes,
                 inquiryOnly: false,
                 adminId: req.user
+
+
             });
 
             return res.status(201).json({ message: "Booking created successfully", booking });
@@ -244,23 +248,24 @@ exports.updateBooking = asyncHandler(async (req, res) => {
     }
 });
 
-exports.getAllBookingsWithStatus = asyncHandler(async (req, res) => {
+
+
+exports.getBookings = asyncHandler(async (req, res) => {
     try {
-        // req.user.id should be the logged-in admin's ID
-        const adminId = req.user;
+        const adminId = req.user._id // logged-in admin ID
 
-        // Find bookings created by this admin only
-        const bookings = await BookingForm.find({ adminId }).sort({ createdAt: -1 });
+        // adminId ने केलेल्या सर्व bookings + inquiries fetch करा
+        const bookings = await BookingForm.find({ adminId })
 
-        // Add status field
+        // प्रत्येक booking/inquiry ला status assign करा
         const bookingsWithStatus = bookings.map(b => ({
             ...b._doc,
-            status: b.inquiryOnly ? "Inquiry" : "Booking"
+            status: b.status || (b.inquiryOnly ? "Inquiry" : "Booking")
         }));
 
         return res.status(200).json(bookingsWithStatus);
     } catch (error) {
-        console.error("Error in getAllBookingsWithStatus:", error);
+        console.error("Error in getBookings:", error);
         return res.status(500).json({ message: "Server error" });
     }
 });
@@ -269,20 +274,20 @@ exports.getAllBookingsWithStatus = asyncHandler(async (req, res) => {
 
 exports.deleteBooking = asyncHandler(async (req, res) => {
     try {
-        const bookingId = req.params.id;
+        const bookingId = req.params.id
 
         const booking = await BookingForm.findById(bookingId);
 
         if (!booking) {
-            return res.status(404).json({ message: "बुकिंग सापडले नाही." });
+            return res.status(404).json({ message: "बुकिंग सापडले नाही." })
         }
 
         await booking.deleteOne();
 
-        return res.status(200).json({ message: "बुकिंग यशस्वीरित्या हटवले गेले." });
+        return res.status(200).json({ message: "बुकिंग यशस्वीरित्या हटवले गेले." })
 
     } catch (error) {
-        console.error("Error in deleteBooking:", error);
-        return res.status(500).json({ message: "सर्व्हर एरर" });
+        console.error("Error in deleteBooking:", error)
+        return res.status(500).json({ message: "सर्व्हर एरर" })
     }
 });
