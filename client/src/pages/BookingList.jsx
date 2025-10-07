@@ -7,13 +7,44 @@ import { toast } from "react-toastify";
 
 const BookingList = () => {
     const [deleteBooking] = useDeleteBookingMutation();
-
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     const [usersPerPage, setUsersPerPage] = useState(5);
     const [search, setSearch] = useState("");
+    const [selectedDate, setSelectedDate] = useState("");
+    const [selectedMonth, setSelectedMonth] = useState("सर्व");
 
     const { data = [], isLoading, isError } = useGetBookingsQuery();
+
+    if (isLoading) return <div className="text-center text-xl font-semibold p-10">लोड होत आहे...</div>;
+    if (isError) return <div className="text-center text-xl text-red-500 p-10">डेटा मिळाला नाही ❌</div>;
+
+    // 🔹 Filter + Search logic
+    const filteredData = data.filter(item => {
+        const searchLower = search.toLowerCase();
+        const matchSearch =
+            item.name?.toLowerCase().includes(searchLower) ||
+            item.eventType?.toLowerCase().includes(searchLower) ||
+            item.status?.toLowerCase().includes(searchLower) ||
+            [item.phone1, item.phone2].filter(Boolean).some(num => num.includes(searchLower));
+
+        const matchDate =
+            !selectedDate ||
+            (item.startDate && new Date(item.startDate).toISOString().split("T")[0] === selectedDate);
+
+        const matchMonth =
+            selectedMonth === "सर्व" ||
+            (item.startDate && new Date(item.startDate).getMonth() + 1 === Number(selectedMonth));
+
+        return matchSearch && matchDate && matchMonth;
+    });
+
+    // 📄 Pagination
+    const indexOfLastRow = currentPage * usersPerPage;
+    const indexOfFirstRow = indexOfLastRow - usersPerPage;
+    const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+    const totalPages = Math.ceil(filteredData.length / usersPerPage);
+
     const handleDelete = async (id) => {
         try {
             await deleteBooking(id).unwrap();
@@ -86,7 +117,7 @@ const BookingList = () => {
             {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
             {/* 🔍 Search Bar */}
             <div className="bg-white p-4 rounded-md mb-4">
-                <div className="flex items-center gap-2 border rounded p-3">
+                <div className="flex items-center gap-2 border rounded p-3 mb-3">
                     <FaSearch className="text-gray-500" />
                     <input
                         type="text"
@@ -98,6 +129,54 @@ const BookingList = () => {
                         placeholder="नाव, फोन, इव्हेंट, किंवा स्टेटस शोधा"
                         className="w-full outline-none"
                     />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 mt-2">
+                    <div>
+                        <label className="mr-2 font-semibold">तारीख निवडा:</label>
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => {
+                                setSelectedDate(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            className="border rounded p-2"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="mr-2 font-semibold">महिना निवडा:</label>
+                        <select
+                            value={selectedMonth}
+                            onChange={(e) => {
+                                setSelectedMonth(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            className="border rounded p-2"
+                        >
+                            <option value="सर्व">सर्व</option>
+                            {Array.from({ length: 12 }, (_, i) => (
+                                <option key={i + 1} value={i + 1}>{i + 1} महिना</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="mr-2 font-semibold">प्रत्येक पृष्ठावर वापरकर्ते:</label>
+                        <select
+                            value={usersPerPage}
+                            onChange={(e) => {
+                                setUsersPerPage(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="border rounded p-2"
+                        >
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -190,6 +269,7 @@ const BookingList = () => {
                                     <td>{row.total}</td>
                                     <td>{row.balance}</td>
                                     <td className="flex justify-center gap-2">
+                                        {/* Edit */}
                                         <button
                                             className="btn btn-sm bg-orange-500 text-white"
                                             onClick={() => navigate("/form", { state: { booking: row.original } })} // ✅ आता योग्य डेटा जातो
@@ -251,6 +331,8 @@ const BookingList = () => {
 };
 
 export default BookingList;
+
+
 
 
 

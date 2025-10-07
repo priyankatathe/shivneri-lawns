@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 export const formApi = createApi({
     reducerPath: "formApi",
 
-    // baseQuery: fetchBaseQuery({ baseUrl: `${import.meta.env.VITE_BACKEND_URL}/form` })
+
 
     baseQuery: fetchBaseQuery({ baseUrl: `${import.meta.env.VITE_BACKEND_URL}/booking`, credentials: "include" }),
     tagTypes: ["form"],
@@ -12,7 +12,7 @@ export const formApi = createApi({
             getBookings: builder.query({
                 query: () => {
                     return {
-                        url: "/full-booking",
+                        url: "/get-booking",
                         method: "GET"
                     }
                 },

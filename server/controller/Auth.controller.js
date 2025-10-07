@@ -146,19 +146,21 @@ exports.fetchAdmin = asyncHandler(async (req, res) => {
 
 //forget password
 exports.forgotPassword = asyncHandler(async (req, res) => {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email is required" });
+    const { email } = req.body
+    if (!email) return res.status(400).json({ message: "Email is required" })
 
-    const user = await Auth.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found" });
+    const user = await Auth.findOne({ email })
+    if (!user) return res.status(400).json({ message: "User not found" })
 
     // 6-digit OTP generate
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
 
-    user.resetOTP = hashedOTP;
-    user.resetOTPExpire = Date.now() + 10 * 60 * 1000; // 10 मिनिटे
-    await user.save();
+    //otp safe thevnyasathi hash krun db madhe save krto  
+    const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex")
+
+    user.resetOTP = hashedOTP
+    user.resetOTPExpire = Date.now() + 10 * 60 * 1000 // 10 मिनिटे
+    await user.save()
 
     const htmlMessage = `
         <h2>Password Reset OTP</h2>
