@@ -1,4 +1,5 @@
 
+
 import React, { useRef, useEffect } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas-oklch";
@@ -6,28 +7,25 @@ import { useLocation } from "react-router-dom";
 
 const Bill = () => {
     const { state } = useLocation();
-    const booking = state?.booking; //booking ghet ahe 
+    const booking = state?.booking;
     const billRef = useRef();
 
-    // Marathi font load (for Mangal)
+    // Marathi font load
     useEffect(() => {
         const mangalFont = new FontFace(
             "Mangal",
             "url(https://fonts.gstatic.com/ea/mangal/v2/Mangal-Regular.woff2)"
         );
-        mangalFont.load().then(function (loadedFont) {
+        mangalFont.load().then((loadedFont) => {
             document.fonts.add(loadedFont);
         });
     }, []);
 
     const generatePDF = async () => {
         const input = billRef.current;
-
-        // Download बटण hide करताना
         const downloadBtn = input.querySelector("#downloadBtn");
         if (downloadBtn) downloadBtn.style.display = "none";
 
-        // Capture high-quality image
         const canvas = await html2canvas(input, {
             scale: 2,
             useCORS: true,
@@ -46,11 +44,9 @@ const Bill = () => {
         let heightLeft = imgHeight;
         let position = 0;
 
-        // पहिला page add करा
         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pdfHeight;
 
-        // बाकीचा content असेल तर पुढचे pages
         while (heightLeft > 0) {
             position = position - pdfHeight;
             pdf.addPage();
@@ -59,9 +55,7 @@ const Bill = () => {
         }
 
         pdf.save(`${booking?.name || "Bill"}.pdf`);
-
-        // पुन्हा download बटण दाखव
-        if (downloadBtn) downloadBtn.style.display = "block"
+        if (downloadBtn) downloadBtn.style.display = "block";
     };
 
     if (!booking) {
@@ -89,7 +83,7 @@ const Bill = () => {
                 <p className="text-gray-700 text-center ms-5 mb-4">फोन: 2541256321</p>
 
                 {/* Customer & Invoice Details */}
-                <div className="flex justify-between mb-6 flex-wrap">
+                <div className="flex justify-between mb-3 ">
                     <div className="w-full sm:w-1/2 mb-4 sm:mb-0">
                         <p className="font-semibold mb-1 text-indigo-600">ग्राहक माहिती:</p>
                         <p>नाम: {booking.name}</p>
@@ -97,7 +91,7 @@ const Bill = () => {
                         {booking.phone2 && <p>फोन 2: {booking.phone2}</p>}
                         <p>पत्ता: {booking.address}</p>
                     </div>
-                    <div className="w-full sm:w-1/2">
+                    <div className="w-full sm:w-1/2 ms-59">
                         <p className="font-semibold mb-1 text-indigo-600">कार्यक्रम माहिती:</p>
                         <p>ठिकाण: {booking.location}</p>
                         <p>कार्यक्रम प्रकार: {booking.eventType}</p>
@@ -110,10 +104,10 @@ const Bill = () => {
                     </div>
                 </div>
 
-                {/* Catering & Gate Items */}
-                <div className="mb-6">
-                    <h4 className="font-semibold mb-2 text-indigo-600">केटरिंग आयटम्स</h4>
-                    {booking.cateringItems?.length > 0 ? (
+                {/* ✅ फक्त जर केटरिंग आयटम्स असतील तरच दाखव */}
+                {booking.cateringItems?.length > 0 && (
+                    <div className="mb-6">
+                        <h4 className="font-semibold mb-2 text-indigo-600">केटरिंग आयटम्स</h4>
                         <table className="w-full border border-gray-300 border-collapse text-sm">
                             <thead className="bg-gray-100">
                                 <tr>
@@ -130,14 +124,13 @@ const Bill = () => {
                                 ))}
                             </tbody>
                         </table>
-                    ) : (
-                        <p className="text-gray-600">❌ केटरिंग आवश्यक नाही</p>
-                    )}
-                </div>
+                    </div>
+                )}
 
-                <div className="mb-6">
-                    <h4 className="font-semibold mb-2 text-indigo-600">गेट पॅकेज आयटम्स</h4>
-                    {booking.gatePackageItems?.length > 0 ? (
+                {/* ✅ फक्त जर गेट पॅकेज असतील तरच दाखव */}
+                {booking.gatePackageItems?.length > 0 && (
+                    <div className="mb-6">
+                        <h4 className="font-semibold mb-2 text-indigo-600">गेट पॅकेज आयटम्स</h4>
                         <table className="w-full border border-gray-300 border-collapse text-sm">
                             <thead className="bg-gray-100">
                                 <tr>
@@ -156,29 +149,74 @@ const Bill = () => {
                                 ))}
                             </tbody>
                         </table>
-                    ) : (
-                        <p className="text-gray-600">❌ गेट पॅकेज आवश्यक नाही</p>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 {/* Total Summary */}
-                <div className="mb-6">
-                    <p className="font-semibold mb-1 text-indigo-600">किमत सारांश:</p>
-                    <p>एकूण रक्कम: ₹{booking.totalRs}</p>
-                    <p>सवलत: ₹{booking.discount}</p>
-                    <p>अंतिम किंमत: ₹{booking.finalPrice}</p>
-                    <p>अ‍ॅडव्हान्स: ₹{booking.advancePayment}</p>
-                    <p>उर्वरीत रक्कम: ₹{booking.balance}</p>
-                    <p>चेक आवश्यक: {booking.chequeRequired}</p>
+                <div className="bg-white shadow-md rounded-lg p-4 border border-gray-200">
+                    <p className="font-semibold mb-2 text-indigo-600 text-lg">किंमत सारांश</p>
+
+                    <div className="space-y-1 text-sm">
+                        {booking.totalRs && (
+                            <div className="flex justify-between">
+                                <span>एकूण रक्कम:</span>
+                                <span>₹{booking.totalRs}</span>
+                            </div>
+                        )}
+
+                        {booking.discount && (
+                            <div className="flex justify-between">
+                                <span>सवलत:</span>
+                                <span>₹{booking.discount}</span>
+                            </div>
+                        )}
+
+                        {booking.finalPrice && (
+                            <div className="flex justify-between font-semibold">
+                                <span>अंतिम किंमत:</span>
+                                <span>₹{booking.finalPrice}</span>
+                            </div>
+                        )}
+
+                        {booking.advancePayment && (
+                            <div className="flex justify-between">
+                                <span>अ‍ॅडव्हान्स पेमेंट:</span>
+                                <span>₹{booking.advancePayment}</span>
+                            </div>
+                        )}
+
+                        {booking.balance && (
+                            <div className="flex justify-between font-semibold">
+                                <span>उर्वरीत रक्कम:</span>
+                                <span>₹{booking.balance}</span>
+                            </div>
+                        )}
+
+                        {/* ✅ चेक आवश्यक असेल तेव्हाच दाखव */}
+                        {booking.chequeRequired === "होय" && (
+                            <>
+                                <div className="flex justify-between">
+                                    <span>बँकेचं नाव:</span>
+                                    <span>{booking.bankName}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>चेक क्रमांक:</span>
+                                    <span>{booking.chequeNumber}</span>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
 
+
+
                 {/* Notes */}
-                {booking.notes && (
+                {/* {booking.notes && (
                     <div className="mb-6">
                         <p className="font-semibold mb-1 text-indigo-600">टिप्पणी:</p>
                         <p className="text-gray-700 whitespace-pre-wrap">{booking.notes}</p>
                     </div>
-                )}
+                )} */}
 
                 <p className="text-center mt-8 font-semibold text-gray-700">
                     टेक सूर्या - फोन: 9621345050
@@ -192,13 +230,12 @@ const Bill = () => {
                     Download PDF
                 </button>
             </div>
-
-
         </div>
     );
 };
 
 export default Bill;
+
 
 
 

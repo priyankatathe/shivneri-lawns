@@ -41,24 +41,30 @@ const BookingSchema = new mongoose.Schema({
     // Cheque requirement
     chequeRequired: {
         type: String,
-        enum: ["होय", "नाही"],
+        enum: ['होय', 'नाही'],
         required: function () { return !this.inquiryOnly; }
     },
-
+    bankName: {
+        type: String,
+        required: function () { return this.chequeRequired === 'होय'; },
+        trim: true
+    },
+    chequeNumber: {
+        type: String,
+        required: function () { return this.chequeRequired === 'होय'; },
+        trim: true
+    },
     notes: { type: String },
 
     // Inquiry Flag
     inquiryOnly: { type: Boolean, default: false },
     adminId: { type: mongoose.Types.ObjectId, ref: "admin" },
-
-    //mayuri ne add kel ahe hee
     status: {
         type: String,
         enum: ["Booking", "Inquiry", "Cancelled"],
-        default: "Booking"
     },
 
 
 });
 
-module.exports = mongoose.model('EventBooking', BookingSchema);
+module.exports = mongoose.model('BookingForm', BookingSchema);
