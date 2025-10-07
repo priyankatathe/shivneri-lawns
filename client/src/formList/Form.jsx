@@ -200,7 +200,7 @@ const Form = () => {
     return (
 
 
-        <div className="min-h-screen  overflow-hidden bg-gray-100 flex items-center justify-center p-4 sm:p-6 ">
+        <div className="min-h-screen mt-15 overflow-hidden bg-gray-100 flex items-center justify-center p-4 sm:p-6 ">
 
             <div className="relative max-w-6xl mx-auto p-6 sm:p-8 bg-white rounded-2xl shadow-lg border border-gray-200">
                 <div className="mb-10 flex items-center justify-center gap-3 flex-wrap text-center">

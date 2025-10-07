@@ -167,15 +167,19 @@
 
 // export default Home;
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useGetAdminQuery } from "../redux/api/authApi";
 import { useGetBookingsQuery } from "../redux/api/formApi";
 import defaultBg from "../assets/2.jpg";
 
 const Home = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const { data } = useGetAdminQuery();
-    const { data: bookingsData = [] } = useGetBookingsQuery();
+    const { data, refetch } = useGetAdminQuery();
+    const { data: bookingsData = [], } = useGetBookingsQuery()
+
+    useEffect(() => {
+        refetch()
+    }, [refetch])
 
     const bgImage = data?.backgroundImg || defaultBg;
 
