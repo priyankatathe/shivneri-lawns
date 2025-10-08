@@ -36,26 +36,27 @@ exports.createBooking = asyncHandler(async (req, res) => {
         } else if (chequeRequired === "no") {
             req.body.chequeRequired = "नाही";
         }
-
         if (inquiryOnly) {
-            // फक्त चौकशीसाठी बेसिक validation
             if (!name || !phone1 || !address) {
                 return res.status(400).json({ message: "काही आवश्यक फील्ड्स गायब आहेत." });
             }
 
-            // चौकशी म्हणून बुकिंग तयार करा (बाकी फील्ड्स optional ठेवा)
-            const booking = await BookingForm.create({
+            // फक्त आवश्यक फील्ड्स ठेवा
+            const inquiryData = {
                 name,
                 phone1,
-                phone2,
+                phone2: phone2 || "",
                 address,
+                notes,
                 inquiryOnly: true,
-                adminId: req.user
-                // बाकी फील्ड्स रिकाम्या किंवा default
-            });
+                adminId: req.user,
+            };
+
+            const booking = await BookingForm.create(inquiryData);
 
             return res.status(201).json({ message: "चौकशी यशस्वी झाली", booking });
-        } else {
+        }
+        else {
             // पूर्ण बुकिंगसाठी validation
             if (!name || !phone1 || !address || !location || !eventType
                 || !startDate || !endDate || !pkg || totalRs == null
@@ -155,13 +156,16 @@ exports.updateBooking = asyncHandler(async (req, res) => {
             advancePayment,
             balance,
             chequeRequired,
+            bankName,
+            chequeNumber,
             notes,
             inquiryOnly
         } = req.body;
-
+        console.log("🔍 Update Request for ID:", bookingId);
         const booking = await BookingForm.findById(bookingId);
 
         if (!booking) {
+            console.log("⚠️ बुकिंग सापडले नाही या ID साठी:", bookingId);
             return res.status(404).json({ message: "बुकिंग सापडले नाही." });
         }
 
@@ -196,14 +200,13 @@ exports.updateBooking = asyncHandler(async (req, res) => {
 
             // दुसर्‍या बुकिंगशी ओव्हरलॅप होत आहे का तपासा
             const conflict = await BookingForm.findOne({
+                adminId: req.user,
                 _id: { $ne: bookingId },
                 $or: [
-                    {
-                        startDate: { $lte: end },
-                        endDate: { $gte: start }
-                    }
+                    { startDate: { $lte: end }, endDate: { $gte: start } }
                 ]
             });
+
 
             if (conflict) {
                 return res.status(400).json({ message: "ही तारीख आधीपासून दुसर्‍या बुकिंगसाठी आरक्षित आहे." });

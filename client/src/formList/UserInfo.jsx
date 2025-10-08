@@ -9,12 +9,11 @@ const UserInfo = ({ formik }) => {
         });
 
     return (
-        <div className="lg:w-[318%] md:w-[209%] w-full overflow-hidden">
+        <div className="lg:w-[318%]   md:w-[209%] w-full overflow-hidden">
             <h2 className="text-xl font-serif mb-6 text-gray-800 text-center lg:text-left lg:ml-[45%]">
                 ग्राहकाची माहिती
             </h2>
 
-            {/* Grid Layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* नाव */}
                 <div className="flex flex-col">
@@ -30,7 +29,6 @@ const UserInfo = ({ formik }) => {
                     )}
                 </div>
 
-                {/* फोन नंबर 1 */}
                 <div className="flex flex-col">
                     <label className="font-semibold mb-1 block">* फोन नंबर 1</label>
                     <input
@@ -69,6 +67,7 @@ const UserInfo = ({ formik }) => {
                         rows={2}
                         placeholder="ग्राहकाचा पत्ता"
                         className={handleClass("address")}
+                        //   className={`${handleClass("address")} p-3`}   
                         {...formik.getFieldProps("address")}
                     />
                     {formik.touched.address && formik.errors.address && (

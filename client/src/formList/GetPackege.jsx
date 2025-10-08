@@ -7,9 +7,23 @@ const GetPackege = ({ formik }) => {
     const [showModal, setShowModal] = useState(false);
     const [selectedYes, setSelectedYes] = useState(false);
 
+    // Reflect initial formik value for gatePackage to local state so the manage button shows on edit
     useEffect(() => {
-        setSelectedYes(formik.values.gatePackage === "yes");
+        console.log("🟢 Formik initial gatePackage:", formik.initialValues.gatePackage);
+        console.log("🟢 Formik initial gatePackageItems:", formik.initialValues.gatePackageItems);
+    }, [formik.initialValues.gatePackage, formik.initialValues.gatePackageItems]);
+
+    useEffect(() => {
+        console.log("🧪 Render GetPackege.jsx");
+        console.log("👉 gatePackage:", formik.values.gatePackage);
+        console.log("👉 gatePackageItems:", formik.values.gatePackageItems);
+    }, [formik.values]);
+    useEffect(() => {
+        console.log("✔️ GetPackege rendered");
+        console.log("formik.values.gatePackage:", formik.values.gatePackage);
     }, [formik.values.gatePackage]);
+
+
 
     const gatePackageItems = formik.values.gatePackageItems || [];
 
@@ -45,25 +59,23 @@ const GetPackege = ({ formik }) => {
     };
 
     return (
+
+
         <div className='overflow-hidden'>
+            {/* <pre>{JSON.stringify(formik.values.gatePackageItems, null, 2)}</pre> */}
+
+
             <div className="mb-4">
                 <label className="font-semibold text-sm">गेट पॅकेज आवश्यक आहे का? *</label>
                 <select
-                    name="gatePackage"
-                    value={formik.values.gatePackage}
-                    onChange={(e) => {
-                        formik.handleChange(e);
-                        setSelectedYes(e.target.value === "yes");
-                        if (e.target.value !== "yes") {
-                            formik.setFieldValue("gatePackageItems", []);
-                        }
-                    }}
-                    onBlur={formik.handleBlur}
                     className={handleClass("gatePackage")}
+                    {...formik.getFieldProps("gatePackage")}
+                    name="gatePackage"
+
                 >
                     <option value="">-- निवडा --</option>
-                    <option value="yes">होय</option>
-                    <option value="no">नाही</option>
+                    <option value="होय">होय</option>
+                    <option value="नाही">नाही</option>
                 </select>
                 {formik.touched.gatePackage && formik.errors.gatePackage && (
                     <div className="text-red-500 text-xs">{formik.errors.gatePackage}</div>

@@ -7,60 +7,96 @@ import Catering from "./Catering";
 import GetPackege from "./GetPackege";
 import Calculationlogic from "./Calculationlogic";
 import UserInfo from "./UserInfo";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { useCreateBookingMutation, useDeleteBookingMutation, useUpdateBookingMutation } from "../redux/api/formApi";
 
 const Form = () => {
-    const [deleteBooking, { isSuccess, isError, error }] = useDeleteBookingMutation()
+    const navigate = useNavigate();
+
     const [createBooking] = useCreateBookingMutation();
     const [updateBooking] = useUpdateBookingMutation()
+    const [UpdateData, setUpdateData] = useState()
+    const [isEditing, setIsEditing] = useState(false)
+    const [editingId, setEditingId] = useState(null)
     const location = useLocation();
     const editingData = location.state?.booking || null;
 
-    const [isEditing, setIsEditing] = useState(false);
-    const [editingId, setEditingId] = useState(null);
+    // Sync incoming editing data to local state for Formik reinitialization
+    useEffect(() => {
+        if (editingData) {
+            setUpdateData(editingData)
+            setIsEditing(true)
+            setEditingId(editingData?._id || null)
+        } else {
+            setUpdateData(undefined)
+            setIsEditing(false)
+            setEditingId(null)
+        }
+    }, [editingData])
+
+
 
 
     const formik = useFormik({
+        enableReinitialize: true,
         initialValues: {
-            bankName: "",
-            chequeNumber: "",
-            notes: "",
-            name: "",
-            phone1: "",
-            phone2: "",
-            address: "",
-            location: "",
-            eventType: "",
-            startDate: "",
-            endDate: "",
-            package: "",
-            cateringRequired: false,
-            catering: "",
-            cateringItems: [
-                { name: "पाणी", quantity: 1 },
-                { name: "भाजी", quantity: 1 },
-                { name: "पोळी", quantity: 1 },
-                { name: "लिंबू सरबत", quantity: 1 },
-                { name: "समोसा", quantity: 1 },
-                { name: "चहा", quantity: 1 },
-                { name: "कढीपत्ता", quantity: 1 },
-            ],
-            gatePackageRequired: false,
-            gatePackageItems: [
-                { name: "तुतारी", quantity: 1 },
-                { name: "भालदार", quantity: 1 },
-                { name: "फुलांची कमान", quantity: 1 },
-            ],
-            totalRs: "",
-            discount: 0,
-            finalPrice: "",
-            advancePayment: "",
-            balance: 0,
-            chequeRequired: "",
-            notes: "",
+            catering: editingData
+                ? editingData.cateringRequired
+                    ? "हो"
+                    : "नाही"
+                : "",
+
+            cateringItems: editingData?.cateringItems?.length
+                ? editingData.cateringItems.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity ?? 1,
+                }))
+                : [
+                    { name: "पाणी", quantity: 1 },
+                    { name: "भाजी", quantity: 1 },
+                    { name: "पोळी", quantity: 1 },
+                    { name: "लिंबू सरबत", quantity: 1 },
+                    { name: "समोसा", quantity: 1 },
+                    { name: "चहा", quantity: 1 },
+                    { name: "कढीपत्ता", quantity: 1 },
+                ],
+
+            gatePackage: editingData
+                ? editingData.gatePackageRequired
+                    ? "हो"
+                    : "नाही"
+                : "",
+            gatePackageItems: editingData?.gatePackageItems?.length
+                ? editingData.gatePackageItems.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity ?? 1,
+                }))
+                : [
+                    { name: "तुतारी", quantity: 1 },
+                    { name: "भालदार", quantity: 1 },
+                    { name: "फुलांची कमान", quantity: 1 },
+                ],
+
+            bankName: UpdateData?.bankName || "",
+            chequeNumber: UpdateData?.chequeNumber || "",
+            notes: UpdateData?.notes || "",
+            name: UpdateData?.name || "",
+            phone1: UpdateData?.phone1 || "",
+            phone2: UpdateData?.phone2 || "",
+            address: UpdateData?.address || "",
+            location: UpdateData?.location || "",
+            eventType: UpdateData?.eventType || "",
+            startDate: UpdateData?.startDate?.split("T")[0] || "",
+            endDate: UpdateData?.endDate?.split("T")[0] || "",
+            package: UpdateData?.package || "",
+            totalRs: UpdateData?.totalRs || "",
+            discount: UpdateData?.discount || 0,
+            finalPrice: UpdateData?.finalPrice || "",
+            advancePayment: UpdateData?.advancePayment || "",
+            balance: UpdateData?.balance || 0,
+            chequeRequired: UpdateData?.chequeRequired || "",
             inquiryOnly: false,
         },
         validationSchema: yup.object({
@@ -97,6 +133,7 @@ const Form = () => {
             notes: yup.string().notRequired(),
         }),
         onSubmit: async (values, { resetForm }) => {
+            console.log("Submitting values:", values);
             console.log("Submitting chequeRequired:", values.chequeRequired);
             const cleanCateringItems = Array.isArray(values.cateringItems)
                 ? values.cateringItems.filter((item) => item.name && item.quantity != null)
@@ -133,40 +170,14 @@ const Form = () => {
                 resetForm();
                 setIsEditing(false);
                 setEditingId(null);
+                navigate("/bookinglist");
+
             } catch (error) {
                 console.error("❌ Update failed:", error);
                 toast.error(error?.data?.message || "Booking operation failed!");
             }
         }
     })
-
-
-
-    useEffect(() => {
-        if (editingData) {
-            const { _id, startDate, endDate, ...rest } = editingData;
-
-            formik.resetForm({
-                values: {
-                    ...formik.initialValues,
-                    ...rest,
-                    startDate: startDate ? startDate.slice(0, 10) : "",
-                    endDate: endDate ? endDate.slice(0, 10) : "",
-                    chequeRequired: rest.chequeRequired || "",
-                    bankName: rest.bankName || "",
-                    chequeNumber: rest.chequeNumber || "",
-                    cateringItems: rest.cateringItems || formik.initialValues.cateringItems,
-                    gatePackageItems: rest.gatePackageItems || formik.initialValues.gatePackageItems,
-                    cateringRequired: rest.cateringRequired ?? false,
-                    gatePackageRequired: rest.gatePackageRequired ?? false,
-                    inquiryOnly: rest.inquiryOnly ?? false,
-                },
-            });
-
-            setIsEditing(true);
-            setEditingId(_id);
-        }
-    }, [editingData]);
 
 
     const handleInquiryClick = async () => {
@@ -200,7 +211,7 @@ const Form = () => {
     return (
 
 
-        <div className="min-h-screen mt-15 overflow-hidden bg-gray-100 flex items-center justify-center p-4 sm:p-6 ">
+        <div className="min-h-screen mt-11  overflow-hidden bg-gray-100 flex items-center justify-center p-4 sm:p-6 ">
 
             <div className="relative max-w-6xl mx-auto p-6 sm:p-8 bg-white rounded-2xl shadow-lg border border-gray-200">
                 <div className="mb-10 flex items-center justify-center gap-3 flex-wrap text-center">
@@ -389,7 +400,7 @@ const Form = () => {
                         </button>
                         <button
                             type="submit"
-                            className="btn btn-primary btn-wide  shadow hover:scale-105 transition"
+                            className="btn btn-primary btn-wide lg:ml-[60%] shadow hover:scale-105 transition"
                         >
                             सबमिट करा
                         </button>
