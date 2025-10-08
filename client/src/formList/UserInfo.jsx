@@ -9,7 +9,7 @@ const UserInfo = ({ formik }) => {
         });
 
     return (
-        <div className="lg:w-[318%] md:w-[209%] w-full overflow-hidden">
+        <div className="lg:w-[318%]   md:w-[209%] w-full overflow-hidden">
             <h2 className="text-xl font-serif mb-6 text-gray-800 text-center lg:text-left lg:ml-[45%]">
                 ग्राहकाची माहिती
             </h2>
@@ -67,6 +67,7 @@ const UserInfo = ({ formik }) => {
                         rows={2}
                         placeholder="ग्राहकाचा पत्ता"
                         className={handleClass("address")}
+                        //   className={`${handleClass("address")} p-3`}   
                         {...formik.getFieldProps("address")}
                     />
                     {formik.touched.address && formik.errors.address && (

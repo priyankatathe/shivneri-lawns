@@ -15,25 +15,37 @@ import { useCreateBookingMutation, useDeleteBookingMutation, useUpdateBookingMut
 const Form = () => {
     const [createBooking] = useCreateBookingMutation();
     const [updateBooking] = useUpdateBookingMutation()
-    // const [UpdateData, setUpdateData] = useState()
+    const [UpdateData, setUpdateData] = useState()
+    const [isEditing, setIsEditing] = useState(false)
+    const [editingId, setEditingId] = useState(null)
     const location = useLocation();
     const editingData = location.state?.booking || null;
 
-    console.log(editingData)
-
-
-    const [isEditing, setIsEditing] = useState(false);
-    const [editingId, setEditingId] = useState(null);
-
+    // Sync incoming editing data to local state for Formik reinitialization
     useEffect(() => {
-        console.log("🟢 Editing data catering:", editingData?.catering);
-    }, [editingData]);
+        if (editingData) {
+            setUpdateData(editingData)
+            setIsEditing(true)
+            setEditingId(editingData?._id || null)
+        } else {
+            setUpdateData(undefined)
+            setIsEditing(false)
+            setEditingId(null)
+        }
+    }, [editingData])
+
+
 
 
     const formik = useFormik({
         enableReinitialize: true,
         initialValues: {
-            catering: editingData?.catering || "",
+            catering: editingData
+                ? editingData.cateringRequired
+                    ? "हो"
+                    : "नाही"
+                : "",
+
             cateringItems: editingData?.cateringItems?.length
                 ? editingData.cateringItems.map(item => ({
                     name: item.name,
@@ -49,8 +61,11 @@ const Form = () => {
                     { name: "कढीपत्ता", quantity: 1 },
                 ],
 
-
-            gatePackage: editingData?.gatePackage || "",
+            gatePackage: editingData
+                ? editingData.gatePackageRequired
+                    ? "हो"
+                    : "नाही"
+                : "",
             gatePackageItems: editingData?.gatePackageItems?.length
                 ? editingData.gatePackageItems.map(item => ({
                     name: item.name,
@@ -61,24 +76,25 @@ const Form = () => {
                     { name: "भालदार", quantity: 1 },
                     { name: "फुलांची कमान", quantity: 1 },
                 ],
-            bankName: editingData?.bankName || "",
-            chequeNumber: editingData?.chequeNumber || "",
-            notes: editingData?.notes || "",
-            name: editingData?.name || "",
-            phone1: editingData?.phone1 || "",
-            phone2: editingData?.phone2 || "",
-            address: editingData?.address || "",
-            location: editingData?.location || "",
-            eventType: editingData?.eventType || "",
-            startDate: editingData?.startDate?.split("T")[0] || "",
-            endDate: editingData?.endDate?.split("T")[0] || "",
-            package: editingData?.package || "",
-            totalRs: editingData?.totalRs || "",
-            discount: editingData?.discount || 0,
-            finalPrice: editingData?.finalPrice || "",
-            advancePayment: editingData?.advancePayment || "",
-            balance: editingData?.balance || 0,
-            chequeRequired: editingData?.chequeRequired || "",
+
+            bankName: UpdateData?.bankName || "",
+            chequeNumber: UpdateData?.chequeNumber || "",
+            notes: UpdateData?.notes || "",
+            name: UpdateData?.name || "",
+            phone1: UpdateData?.phone1 || "",
+            phone2: UpdateData?.phone2 || "",
+            address: UpdateData?.address || "",
+            location: UpdateData?.location || "",
+            eventType: UpdateData?.eventType || "",
+            startDate: UpdateData?.startDate?.split("T")[0] || "",
+            endDate: UpdateData?.endDate?.split("T")[0] || "",
+            package: UpdateData?.package || "",
+            totalRs: UpdateData?.totalRs || "",
+            discount: UpdateData?.discount || 0,
+            finalPrice: UpdateData?.finalPrice || "",
+            advancePayment: UpdateData?.advancePayment || "",
+            balance: UpdateData?.balance || 0,
+            chequeRequired: UpdateData?.chequeRequired || "",
             inquiryOnly: false,
         },
         validationSchema: yup.object({
@@ -191,7 +207,7 @@ const Form = () => {
     return (
 
 
-        <div className="min-h-screen  overflow-hidden bg-gray-100 flex items-center justify-center p-4 sm:p-6 ">
+        <div className="min-h-screen mt-11  overflow-hidden bg-gray-100 flex items-center justify-center p-4 sm:p-6 ">
 
             <div className="relative max-w-6xl mx-auto p-6 sm:p-8 bg-white rounded-2xl shadow-lg border border-gray-200">
                 <div className="mb-10 flex items-center justify-center gap-3 flex-wrap text-center">
@@ -380,7 +396,7 @@ const Form = () => {
                         </button>
                         <button
                             type="submit"
-                            className="btn btn-primary btn-wide  shadow hover:scale-105 transition"
+                            className="btn btn-primary btn-wide lg:ml-[60%] shadow hover:scale-105 transition"
                         >
                             सबमिट करा
                         </button>

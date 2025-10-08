@@ -9,12 +9,19 @@ const GetPackege = ({ formik }) => {
 
     // Reflect initial formik value for gatePackage to local state so the manage button shows on edit
     useEffect(() => {
-        if (formik?.values?.gatePackage === "yes") {
-            setSelectedYes(true)
-        } else {
-            setSelectedYes(false)
-        }
-    }, [formik?.values?.gatePackage])
+        console.log("🟢 Formik initial gatePackage:", formik.initialValues.gatePackage);
+        console.log("🟢 Formik initial gatePackageItems:", formik.initialValues.gatePackageItems);
+    }, [formik.initialValues.gatePackage, formik.initialValues.gatePackageItems]);
+
+    useEffect(() => {
+        console.log("🧪 Render GetPackege.jsx");
+        console.log("👉 gatePackage:", formik.values.gatePackage);
+        console.log("👉 gatePackageItems:", formik.values.gatePackageItems);
+    }, [formik.values]);
+    useEffect(() => {
+        console.log("✔️ GetPackege rendered");
+        console.log("formik.values.gatePackage:", formik.values.gatePackage);
+    }, [formik.values.gatePackage]);
 
 
 
@@ -55,6 +62,7 @@ const GetPackege = ({ formik }) => {
 
 
         <div className='overflow-hidden'>
+            {/* <pre>{JSON.stringify(formik.values.gatePackageItems, null, 2)}</pre> */}
 
 
             <div className="mb-4">

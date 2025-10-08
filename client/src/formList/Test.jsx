@@ -19,14 +19,26 @@ const Form = () => {
     const location = useLocation();
     const editingData = location.state?.booking || null;
 
+    console.log(editingData)
+
+
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
+
+    useEffect(() => {
+        console.log("🟢 Editing data catering:", editingData?.catering);
+    }, [editingData]);
 
 
     const formik = useFormik({
         enableReinitialize: true,
         initialValues: {
-            catering: editingData?.catering || "",
+            catering: editingData
+                ? editingData.cateringRequired
+                    ? "हो"
+                    : "नाही"
+                : "",
+
             cateringItems: editingData?.cateringItems?.length
                 ? editingData.cateringItems.map(item => ({
                     name: item.name,
@@ -41,7 +53,13 @@ const Form = () => {
                     { name: "चहा", quantity: 1 },
                     { name: "कढीपत्ता", quantity: 1 },
                 ],
-            gatePackage: editingData?.gatePackage || "",
+
+
+            gatePackage: editingData
+                ? editingData.gatePackageRequired
+                    ? "हो"
+                    : "नाही"
+                : "",
             gatePackageItems: editingData?.gatePackageItems?.length
                 ? editingData.gatePackageItems.map(item => ({
                     name: item.name,
@@ -129,17 +147,17 @@ const Form = () => {
 
             try {
                 if (isEditing && editingId) {
-                    console.log("⏫ Updating booking with ID:", editingId);
-                    await updateBooking({ ...payload, _id: editingId }).unwrap()
 
+                    console.log("⏫ Payload to send:", payload);
+                    console.log("⏫ Editing ID:", editingId);
+
+                    await updateBooking({ id: editingId, data: payload }).unwrap();  // ✅ हे पाहा तुमच्या RTK slice काय expect करतं
                     toast.success("Booking updated successfully!");
                 } else {
                     console.log("🆕 Creating new booking");
                     await createBooking(payload).unwrap();
                     toast.success("Booking created successfully!");
                 }
-
-
                 resetForm();
                 setIsEditing(false);
                 setEditingId(null);
@@ -149,23 +167,6 @@ const Form = () => {
             }
         }
     })
-
-    useEffect(() => {
-        if (editingData) {
-            formik.resetForm({
-                values: {
-                    ...formik.initialValues,
-                    ...editingData,
-                    catering: editingData?.catering || "",          // ✅ ही ओळ जोडा
-                    gatePackage: editingData?.gatePackage || "",    // ✅ ही ओळ जोडा
-                    startDate: editingData.startDate?.split("T")[0] || "",
-                    endDate: editingData.endDate?.split("T")[0] || "",
-                },
-            });
-        }
-    }, [editingData]);
-
-
 
 
     const handleInquiryClick = async () => {
@@ -189,6 +190,14 @@ const Form = () => {
             toast.error(error?.data?.message || "चौकशी करताना त्रुटी आली!");
         }
     };
+    useEffect(() => {
+        if (editingData && editingData._id) {
+            console.log("✅ Got booking to edit:", editingData);
+            setEditingId(editingData._id);
+        } else {
+            console.warn("❌ booking data OR _id missing", editingData);
+        }
+    }, [editingData]);
 
     const handleClass = (field) =>
         clsx("input input-bordered w-full bg-blue-50 focus:bg-white transition", {

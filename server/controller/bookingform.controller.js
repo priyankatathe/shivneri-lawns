@@ -163,10 +163,11 @@ exports.updateBooking = asyncHandler(async (req, res) => {
             notes,
             inquiryOnly
         } = req.body;
-
+        console.log("🔍 Update Request for ID:", bookingId);
         const booking = await BookingForm.findById(bookingId);
 
         if (!booking) {
+            console.log("⚠️ बुकिंग सापडले नाही या ID साठी:", bookingId);
             return res.status(404).json({ message: "बुकिंग सापडले नाही." });
         }
 
@@ -201,14 +202,13 @@ exports.updateBooking = asyncHandler(async (req, res) => {
 
             // दुसर्‍या बुकिंगशी ओव्हरलॅप होत आहे का तपासा
             const conflict = await BookingForm.findOne({
+                adminId: req.user,
                 _id: { $ne: bookingId },
                 $or: [
-                    {
-                        startDate: { $lte: end },
-                        endDate: { $gte: start }
-                    }
+                    { startDate: { $lte: end }, endDate: { $gte: start } }
                 ]
             });
+
 
             if (conflict) {
                 return res.status(400).json({ message: "ही तारीख आधीपासून दुसर्‍या बुकिंगसाठी आरक्षित आहे." });
@@ -255,7 +255,7 @@ exports.updateBooking = asyncHandler(async (req, res) => {
 
 exports.getBookings = asyncHandler(async (req, res) => {
     try {
-        const adminId = req.user._id // logged-in admin ID
+        const adminId = req.user._id
 
         // adminId ने केलेल्या सर्व bookings + inquiries fetch करा
         const bookings = await BookingForm.find({ adminId })
