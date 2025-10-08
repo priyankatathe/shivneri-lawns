@@ -158,9 +158,9 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
     //otp safe thevnyasathi hash krun db madhe save krto  
     const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex")
 
-    user.resetOTP = hashedOTP
-    user.resetOTPExpire = Date.now() + 10 * 60 * 1000 // 10 मिनिटे
-    await user.save()
+    user.resetOTP = hashedOTP;
+    user.resetOTPExpire = Date.now() + 10 * 60 * 1000;
+    await user.save();
 
     const htmlMessage = `
         <h2>Password Reset OTP</h2>
@@ -171,7 +171,7 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
     const sent = await sendEmail({
         to: user.email,
         subject: "Password Reset OTP",
-        message: `Your OTP is: ${otp}. Valid for 10 minutes.`, // plain text
+        message: `Your OTP is: ${otp}. Valid for 10 minutes.`,
         html: htmlMessage
     });
 

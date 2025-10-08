@@ -6,7 +6,6 @@ const mongoose = require("mongoose");
 
 exports.createBooking = asyncHandler(async (req, res) => {
     try {
-
         const {
             name,
             phone1,
@@ -65,14 +64,13 @@ exports.createBooking = asyncHandler(async (req, res) => {
                 || chequeRequired == null) {
                 return res.status(400).json({ message: "काही आवश्यक फील्ड्स गायब आहेत." });
             }
-
+            ``
             // तारीख स्वरूप तपासणी
             const start = new Date(startDate);
             const end = new Date(endDate);
             if (isNaN(start) || isNaN(end)) {
                 return res.status(400).json({ message: "तारीखांचा स्वरूप चुकीचा आहे." });
             }
-
             // dateOverlap
             const conflict = await BookingForm.findOne({
                 adminId: req.user,
@@ -255,12 +253,13 @@ exports.updateBooking = asyncHandler(async (req, res) => {
 
 exports.getBookings = asyncHandler(async (req, res) => {
     try {
-        const adminId = req.user._id
+        // req.user.id should be the logged-in admin's ID
+        const adminId = req.user;
 
-        // adminId ने केलेल्या सर्व bookings + inquiries fetch करा
-        const bookings = await BookingForm.find({ adminId })
+        // Find bookings created by this admin only
+        const bookings = await BookingForm.find({ adminId }).sort({ createdAt: -1 });
 
-        // प्रत्येक booking/inquiry ला status assign करा
+        // Add status field
         const bookingsWithStatus = bookings.map(b => ({
             ...b._doc,
             status: b.status || (b.inquiryOnly ? "Inquiry" : "Booking")

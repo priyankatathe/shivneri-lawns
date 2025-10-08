@@ -146,23 +146,27 @@ const Login = () => {
             password: yup.string().required("Enter password"),
         }),
         onSubmit: (values) => {
-            adminLogin(values); // async handled by RTK Query
+            adminLogin(values)
         },
     });
 
     // ✅ Success / Error handling using useEffect
     useEffect(() => {
         if (isSuccess) {
-            // Save admin data in localStorage
             localStorage.setItem("admin", JSON.stringify(data));
             toast.success("Admin Login Successfully ✅");
             navigate("/"); // redirect
+            // ✅ Page refresh (refetch purpose)
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
         }
 
         if (isError) {
             toast.error(error?.data?.message || "Login failed!");
         }
     }, [isSuccess, isError, error, data, navigate]);
+
 
     const handleClass = (key) =>
         clsx(
