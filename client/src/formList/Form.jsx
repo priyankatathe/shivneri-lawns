@@ -7,12 +7,14 @@ import Catering from "./Catering";
 import GetPackege from "./GetPackege";
 import Calculationlogic from "./Calculationlogic";
 import UserInfo from "./UserInfo";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { useCreateBookingMutation, useDeleteBookingMutation, useUpdateBookingMutation } from "../redux/api/formApi";
 
 const Form = () => {
+    const navigate = useNavigate();
+
     const [createBooking] = useCreateBookingMutation();
     const [updateBooking] = useUpdateBookingMutation()
     const [UpdateData, setUpdateData] = useState()
@@ -168,6 +170,8 @@ const Form = () => {
                 resetForm();
                 setIsEditing(false);
                 setEditingId(null);
+                navigate("/bookinglist");
+
             } catch (error) {
                 console.error("❌ Update failed:", error);
                 toast.error(error?.data?.message || "Booking operation failed!");
