@@ -152,6 +152,7 @@ const Form = () => {
                 gatePackageItems: cleanGatePackageItems,
                 cateringRequired,
                 gatePackageRequired,
+                // status: isEditing ? "Booked" : "Enquiry",
             };
 
             try {

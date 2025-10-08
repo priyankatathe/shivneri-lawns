@@ -19,7 +19,7 @@ const GetPackege = ({ formik }) => {
         console.log("👉 gatePackageItems:", formik.values.gatePackageItems);
     }, [formik.values]);
     useEffect(() => {
-        console.log("✔️ GetPackege rendered");
+        console.log("✔ GetPackege rendered");
         console.log("formik.values.gatePackage:", formik.values.gatePackage);
     }, [formik.values.gatePackage]);
 

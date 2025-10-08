@@ -8,7 +8,7 @@ const Calculationlogic = ({ formik }) => {
             "border-green-500": formik.touched[field] && !formik.errors[field],
         });
 
-    // finalPrice गणना
+    // finalPrice calculated
     useEffect(() => {
         const total = parseFloat(formik.values.totalRs) || 0;
         const disc = parseFloat(formik.values.discount) || 0;
